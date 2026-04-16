@@ -23,13 +23,11 @@ A sample **FastAPI** backend project for TTM4115.
 │   ├── routers/
 │   │   ├── users.py     # /users CRUD operations
 │   │   ├── orders.py    # /orders CRUD operations
-│   │   ├── drones.py    # /drones CRUD operations
-│   │   └── items.py     # /items CRUD operations
+│   │   └── drones.py    # /drones CRUD operations
 │   └── schemas/
 │       ├── users.py     # User Pydantic schemas
 │       ├── orders.py    # Order Pydantic schemas
-│       ├── drones.py    # Drone Pydantic schemas
-│       └── items.py     # Item Pydantic schemas
+│       └── drones.py    # Drone Pydantic schemas
 ├── tests/
 │   ├── conftest.py      # Test overrides and database fixtures
 │   ├── test_users.py    # pytest tests for users
@@ -91,14 +89,7 @@ pytest tests/
 
 ## API endpoints
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/` | Welcome / health-check |
-| GET | `/items/` | List all items |
-| POST | `/items/` | Create an item |
-| GET | `/items/{id}` | Get a single item |
-| PUT | `/items/{id}` | Update an item |
-| DELETE | `/items/{id}` | Delete an item |
+Will add later, can be found at /docs or /redoc
 
 ## Running tests
 
