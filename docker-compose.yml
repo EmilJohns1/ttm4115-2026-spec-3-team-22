@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    container_name: ttm4115_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+      # Note: For production use bind mounts locally to hot-reload inside the container
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload

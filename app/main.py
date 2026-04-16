@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 
-from app.routers import items
+from app.routers import users, orders, drones
+from app.db.base import Base, engine
+from app.db import models
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="TTM4115 Backend",
@@ -8,7 +12,9 @@ app = FastAPI(
     version="0.1.0",
 )
 
-app.include_router(items.router)
+app.include_router(users.router)
+app.include_router(orders.router)
+app.include_router(drones.router)
 
 
 @app.get("/", tags=["root"])

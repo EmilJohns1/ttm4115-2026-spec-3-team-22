@@ -4,10 +4,11 @@ A sample **FastAPI** backend project for TTM4115.
 
 ## Features
 
-- RESTful CRUD API for an *Items* resource
-- Pydantic v2 request / response validation
+- RESTful CRUD API for multiple resources (Users, Orders, Drones, Items).
+- SQLite Database integration via SQLAlchemy ORM.
+- Pydantic v2 request / response validation.
 - Auto-generated interactive docs at `/docs` (Swagger UI) and `/redoc`
-- pytest test suite
+- pytest test suite that runs against an in-memory SQLite database.
 
 ## Project structure
 
@@ -15,16 +16,49 @@ A sample **FastAPI** backend project for TTM4115.
 .
 ├── app/
 │   ├── main.py          # FastAPI application & root endpoint
-│   ├── models.py        # Pydantic schemas
-│   └── routers/
-│       └── items.py     # /items CRUD router
+│   ├── db/
+│   │   ├── base.py      # SQLAlchemy setup & base definitions
+│   │   ├── deps.py      # FastAPI Dependency Injection (get_db)
+│   │   └── models.py    # SQLAlchemy database models
+│   ├── routers/
+│   │   ├── users.py     # /users CRUD operations
+│   │   ├── orders.py    # /orders CRUD operations
+│   │   ├── drones.py    # /drones CRUD operations
+│   │   └── items.py     # /items CRUD operations
+│   └── schemas/
+│       ├── users.py     # User Pydantic schemas
+│       ├── orders.py    # Order Pydantic schemas
+│       ├── drones.py    # Drone Pydantic schemas
+│       └── items.py     # Item Pydantic schemas
 ├── tests/
-│   └── test_items.py    # pytest tests
+│   ├── conftest.py      # Test overrides and database fixtures
+│   ├── test_users.py    # pytest tests for users
+│   ├── test_orders.py   # pytest tests for orders
+│   └── test_drones.py   # pytest tests for drones
 ├── requirements.txt
+├── Dockerfile           # Docker image setup
+├── docker-compose.yml   # Docker Compose configuration
 └── README.md
 ```
 
-## Getting started
+## Getting started (Using Docker)
+
+The easiest way to run the backend is by using Docker Compose. This runs your app on port `8000` with hot-reloading enabled.
+
+### 1. Build and Run
+
+```bash
+docker-compose up --build
+```
+
+The API is now available at <http://localhost:8000>.  
+Interactive docs: <http://localhost:8000/docs>
+
+---
+
+## Getting started (Local Setup)
+
+If you prefer running without Docker:
 
 ### 1. Create and activate a virtual environment
 
@@ -45,8 +79,15 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-The API is now available at <http://localhost:8000>.  
-Interactive docs: <http://localhost:8000/docs>
+## Running Tests
+
+Tests execute against an isolated in-memory SQLite database, so they will not affect your local `.db` file.
+
+To run the suite locally:
+
+```bash
+pytest tests/
+```
 
 ## API endpoints
 
