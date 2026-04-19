@@ -1,15 +1,19 @@
 syntax = "proto2";
 
 message Status{
-    required uint32 Date=1;
+    required uint32 Date = 1;
     required uint32 Battery_level = 2;
     required double Latitude = 3;
     required double Longitude = 4;
     required double Speed = 5;
-    required uint32 Magic = 6 [default = 2137];
 }
 
 message TaskAssignment{
+    required double Latitude = 1;
+    required double Longitude = 2;
+}
+
+message AssignmentRequest{
     required double Latitude = 1;
     required double Longitude = 2;
 }

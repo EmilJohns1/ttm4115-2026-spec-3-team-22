@@ -1,11 +1,29 @@
 From drone:
-1. status (GPS, Battery, Speed)  // what channel ??
+1. status (GPS, Battery, Speed)  // what channel
 
-From drone-mng:
+From dock:
 1. task_assignment (coordinates?) // to drone, on drone's channel
 2. arrival_confirmation () // sth from client
-3. drone_assigned (drone_ID) // to backend
+3. drone_assignment (drone_ID) // to backend
 4. assignment_failed (code)  // to backend
 
+From backend:
+1. assignment_request(coordinates) // to dock
 
 .\protoc-25.9-win64\bin\protoc.exe --python_out=. messages.proto
+
+
+Channel tree
+
+delivery-system/
+    drone/
+        <droneID>/
+            status
+                # status (drone to backend)
+            assignment
+                # task assignment (dock to drone)
+                # arrival confirmation (backend to drone, confirm to fly back)
+    management/
+        # assignment request (backend to dock)
+        # drone assignment (dock to backend)
+        # assignment failed (dock to backend)

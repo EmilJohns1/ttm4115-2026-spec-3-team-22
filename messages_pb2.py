@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0emessages.proto\"v\n\x06Status\x12\x0c\n\x04\x44\x61te\x18\x01 \x02(\r\x12\x15\n\rBattery_level\x18\x02 \x02(\r\x12\x10\n\x08Latitude\x18\x03 \x02(\x01\x12\x11\n\tLongitude\x18\x04 \x02(\x01\x12\r\n\x05Speed\x18\x05 \x02(\x01\x12\x13\n\x05Magic\x18\x06 \x02(\r:\x04\x32\x31\x33\x37\"5\n\x0eTaskAssignment\x12\x10\n\x08Latitude\x18\x01 \x02(\x01\x12\x11\n\tLongitude\x18\x02 \x02(\x01\"&\n\x13\x41rrivalConfirmation\x12\x0f\n\x07\x44roneID\x18\x01 \x01(\r\"\"\n\x0f\x44roneAssignment\x12\x0f\n\x07\x44roneID\x18\x01 \x02(\r\"#\n\x10\x41ssignmentFailed\x12\x0f\n\x07\x45rrCode\x18\x01 \x02(\r')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0emessages.proto\"a\n\x06Status\x12\x0c\n\x04\x44\x61te\x18\x01 \x02(\r\x12\x15\n\rBattery_level\x18\x02 \x02(\r\x12\x10\n\x08Latitude\x18\x03 \x02(\x01\x12\x11\n\tLongitude\x18\x04 \x02(\x01\x12\r\n\x05Speed\x18\x05 \x02(\x01\"5\n\x0eTaskAssignment\x12\x10\n\x08Latitude\x18\x01 \x02(\x01\x12\x11\n\tLongitude\x18\x02 \x02(\x01\"8\n\x11\x41ssignmentRequest\x12\x10\n\x08Latitude\x18\x01 \x02(\x01\x12\x11\n\tLongitude\x18\x02 \x02(\x01\"&\n\x13\x41rrivalConfirmation\x12\x0f\n\x07\x44roneID\x18\x01 \x01(\r\"\"\n\x0f\x44roneAssignment\x12\x0f\n\x07\x44roneID\x18\x01 \x02(\r\"#\n\x10\x41ssignmentFailed\x12\x0f\n\x07\x45rrCode\x18\x01 \x02(\r')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -22,13 +22,15 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'messages_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
   _globals['_STATUS']._serialized_start=18
-  _globals['_STATUS']._serialized_end=136
-  _globals['_TASKASSIGNMENT']._serialized_start=138
-  _globals['_TASKASSIGNMENT']._serialized_end=191
-  _globals['_ARRIVALCONFIRMATION']._serialized_start=193
-  _globals['_ARRIVALCONFIRMATION']._serialized_end=231
-  _globals['_DRONEASSIGNMENT']._serialized_start=233
-  _globals['_DRONEASSIGNMENT']._serialized_end=267
-  _globals['_ASSIGNMENTFAILED']._serialized_start=269
-  _globals['_ASSIGNMENTFAILED']._serialized_end=304
+  _globals['_STATUS']._serialized_end=115
+  _globals['_TASKASSIGNMENT']._serialized_start=117
+  _globals['_TASKASSIGNMENT']._serialized_end=170
+  _globals['_ASSIGNMENTREQUEST']._serialized_start=172
+  _globals['_ASSIGNMENTREQUEST']._serialized_end=228
+  _globals['_ARRIVALCONFIRMATION']._serialized_start=230
+  _globals['_ARRIVALCONFIRMATION']._serialized_end=268
+  _globals['_DRONEASSIGNMENT']._serialized_start=270
+  _globals['_DRONEASSIGNMENT']._serialized_end=304
+  _globals['_ASSIGNMENTFAILED']._serialized_start=306
+  _globals['_ASSIGNMENTFAILED']._serialized_end=341
 # @@protoc_insertion_point(module_scope)
