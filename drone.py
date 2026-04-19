@@ -1,8 +1,7 @@
 import paho.mqtt.client as mqtt
 from threading import Thread
 import random
-
-from scapy.contrib.mount import NULL_Call
+import messages_pb2 as mess
 from stmpy import Machine, Driver
 
 broker = "localhost"
@@ -20,6 +19,7 @@ class MQTT_Drone:
 
     def on_message(self, client, userdata, msg):
         print("on_message(): topic: {}".format(msg.topic))
+        self.stm_driver.send("task_assignment", "drone")
         # self.count = self.count + 1
         # if self.count == 20:
         #     self.client.disconnect()
@@ -32,7 +32,8 @@ class MQTT_Drone:
         print("Connecting to {}:{}".format(broker, port))
         self.client.connect(broker, port)
 
-        self.client.subscribe("test")
+        self.client.subscribe(f"delivery-system/drone/{DroneID}/assignment")
+
         try:
             thread = Thread(target=self.client.loop_forever)
             thread.start()
@@ -41,17 +42,24 @@ class MQTT_Drone:
             self.client.disconnect()
 
 class Drone:
-    def __init__(self):
-        self.mqttclient = None
+    # def __init__(self):
+    #     self.mqttclient = MQTT_Drone()
 
     def on_idle(self):
         self.goalLatitude = 0
         self.goalLongitude = 0
 
     def send_status(self):
-        # TODO: send statuses and... fly? xd
-        self.mqttclient.publish("test", "highUpInTheSky") # test message
-        pass
+        # TODO: pass status data from sensors
+        status = mess.Status()
+        status.Date = 1234567
+        status.Battery_level = 74
+        status.Latitude = 17.456782
+        status.Longitude = -19.2317
+        status.Speed = 58.47
+        print(status)
+        self.mqttclient.publish(f"delivery-system/drone/{DroneID}/status", status.SerializeToString()) # test message
+        # pass
 
 t0 = {
     "source": "initial",
@@ -63,14 +71,14 @@ t1 = {
     "trigger": "task_assignment",   # needs to be a trigger to driver coming from mqtt message
     "source": "idle",
     "target": "flight",
-    "effect": "start_timer('flight', 20)", # 20 is assumption about X
+    "effect": "start_timer('t', 2000)", # 20 is assumption about X
 }
 
 t1_update = {
     "trigger": "t",
     "source": "flight",
     "target": "flight",
-    "effect": "send_status; start_timer('t', 20)",
+    "effect": "send_status; start_timer('t', 2000)",
 }
 
 t2 = {
@@ -85,14 +93,14 @@ t3 = {
     "trigger": "arrival_confirmation",
     "source": "idle",
     "target": "return",
-    "effect": "start_timer('t', 20)",
+    "effect": "start_timer('t', 2000)",
 }
 
 t3_update = {
     "trigger": "t",
     "source": "return",
     "target": "return",
-    "effect": "send_status; start_timer('t', 20)",
+    "effect": "send_status; start_timer('t', 2000)",
 }
 
 t4 = {
@@ -111,11 +119,11 @@ def start_machine():
     driver.add_machine(drone_machine)
 
     myclient = MQTT_Drone()
-    drone.mqttclient = myclient.client
     myclient.stm_driver = driver
 
     driver.start()
     myclient.start(broker, port)
+    drone.mqttclient = myclient.client
 
 
 if __name__ == '__main__':
