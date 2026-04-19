@@ -6,7 +6,7 @@ import messages_pb2
 
 broker = "localhost"
 port = 1883
-DroneID = f'drone-{66}' # get from drone for now
+DroneID = f'drone-{57}' # get from drone for now
 
 def connect():
     def on_connect(self, client, userdata, flags, rc):

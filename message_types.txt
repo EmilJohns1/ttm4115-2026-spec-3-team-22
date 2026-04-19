@@ -22,8 +22,12 @@ delivery-system/
                 # status (drone to backend)
             assignment
                 # task assignment (dock to drone)
+            confirmation
                 # arrival confirmation (backend to drone, confirm to fly back)
     management/
-        # assignment request (backend to dock)
-        # drone assignment (dock to backend)
-        # assignment failed (dock to backend)
+        request
+            # assignment request (backend to dock)
+        assignment
+            # drone assignment (dock to backend)
+        failure
+            # assignment failed (dock to backend)
