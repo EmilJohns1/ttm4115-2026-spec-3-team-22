@@ -14,9 +14,9 @@ def connect():
 
 def subscribe(client, topic):
     def on_message(client, obj, msg):
-        report = messages_pb2.TaskAssignment()
+        report = messages_pb2.DroneHello()
         report.ParseFromString(msg.payload)
-        print(msg.topic+" "+str(report.Latitude))
+        print(msg.topic+" "+str(report.DroneID))
         # print(msg.payload)
 
     client.subscribe(topic)
@@ -24,7 +24,7 @@ def subscribe(client, topic):
 
 def run():
     client = connect()
-    subscribe(client, "test")
+    subscribe(client, f"delivery-system/drone/+/readiness")
     client.loop_forever()
 
 if __name__ == '__main__':

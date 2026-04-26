@@ -24,6 +24,11 @@ delivery-system/
                 # task assignment (dock to drone)
             confirmation
                 # arrival confirmation (backend to drone, confirm to fly back)
+            readiness
+                # battery (drone to dock)
+    drones/
+        readiness
+            # empty (dock to all drones)
     management/
         request
             # assignment request (backend to dock)

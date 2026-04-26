@@ -18,6 +18,11 @@ message AssignmentRequest{
     required double Longitude = 2;
 }
 
+message DroneHello{
+    required string DroneID = 1;
+    required uint32 Battery = 2;
+}
+
 message ArrivalConfirmation{
     optional uint32 DroneID = 1;
 }

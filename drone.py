@@ -6,7 +6,8 @@ from stmpy import Machine, Driver
 
 broker = "localhost"
 port = 1883
-DroneID = f'drone-{random.randint(0, 100)}'
+DroneID = f'drone-{5}'
+# DroneID = f'drone-{random.randint(0, 100)}'
 
 class MQTT_Drone:
     def __init__(self):
@@ -16,12 +17,15 @@ class MQTT_Drone:
 
     def on_connect(self, client, userdata, flags, rc, properties):
         print("on_connect(): {}".format(mqtt.connack_string(rc)))
+        self.stm_driver.start(keep_active=True)
 
     def on_message(self, client, userdata, msg):
         print("on_message(): topic: {}".format(msg.topic))
         message = format(msg.topic).split("/")[-1]
         if message == "assignment":
-            self.stm_driver.send("task_assignment", "drone")
+            report = mess.TaskAssignment()
+            report.ParseFromString(msg.payload)
+            self.stm_driver.send("task_assignment", "drone", args=[str(report.Latitude), str(report.Longitude)])
         elif message == "confirmation":
             self.stm_driver.send("arrival_confirmation", "drone")
         # self.count = self.count + 1
@@ -47,6 +51,18 @@ class Drone:
     def on_idle(self):
         self.goalLatitude = 0
         self.goalLongitude = 0
+        self.batteryLevel = 0
+        payload = mess.DroneHello()
+        payload.DroneID = DroneID
+        payload.Battery = self.batteryLevel
+        self.mqttclient.publish(f"delivery-system/drone/{DroneID}/readiness", payload.SerializeToString())
+
+    def update_goal(self, Latitude, Longitude):
+        self.goalLatitude = Latitude
+        self.goalLongitude = Longitude
+        print(self.goalLatitude)
+        print(self.goalLongitude)
+        return 'flight'
 
     def send_status(self):
         # TODO: pass status data from sensors
@@ -58,7 +74,6 @@ class Drone:
         status.Speed = 58.47
         print(status)
         self.mqttclient.publish(f"delivery-system/drone/{DroneID}/status", status.SerializeToString()) # test message
-        # pass
 
 t0 = {
     "source": "initial",
@@ -70,7 +85,12 @@ t1 = {
     "trigger": "task_assignment",  # from mqtt message
     "source": "idle",
     "target": "flight",
-    "effect": "start_timer('t', 2000)", # 2000 is assumption about X
+    "effect": "update_goal(*)", # 2000 is assumption about X
+}
+
+flight = {
+    "name": "flight",
+    "entry": "start_timer('t', 2000)"
 }
 
 t1_update = {
@@ -111,7 +131,7 @@ t4 = {
 
 def start_machine():
     drone = Drone()
-    drone_machine = Machine(transitions=[t0, t1, t1_update, t2, t3, t3_update, t4], obj=drone, name="drone")
+    drone_machine = Machine(transitions=[t0, t1, t1_update, t2, t3, t3_update, t4], states=[flight], obj=drone, name="drone")
     drone.stm = drone_machine
 
     driver = Driver()
@@ -121,7 +141,7 @@ def start_machine():
     drone.mqttclient = myclient.client
     myclient.stm_driver = driver
 
-    driver.start()
+    # driver.start(keep_active=True)    # started in MQTT_Drone._on_connect() to prevent race
     myclient.start(broker, port)
 
 
