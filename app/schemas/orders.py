@@ -28,7 +28,10 @@ class Order(OrderBase):
     amount: Amount
     createdAt: datetime
     updatedAt: datetime
+    destinationLat: Optional[float] = None
+    destinationLon: Optional[float] = None
     departedAt: Optional[datetime] = None
+    drone_id: Optional[str] = None
 
     model_config = {"from_attributes": True}
 

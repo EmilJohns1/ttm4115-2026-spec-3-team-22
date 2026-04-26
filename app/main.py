@@ -5,6 +5,7 @@ from app.routers import users, orders, drones, products
 from app.db.base import Base, engine, SessionLocal
 from app.db import models
 from app.db.seed import seed_db
+from app.mqtt.mqtt_client import mqtt_service
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -15,8 +16,14 @@ async def lifespan(app: FastAPI):
         seed_db(db)
     finally:
         db.close()
+    
+    # Start MQTT background listener
+    #mqtt_service.start() Add this when we have the MQTT client implemented and ready to use
+    
     yield
+    
     # Shutdown logic
+    #mqtt_service.stop()
 
 app = FastAPI(
     title="TTM4115 Backend",

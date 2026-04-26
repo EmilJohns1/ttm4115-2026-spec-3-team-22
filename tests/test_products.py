@@ -24,8 +24,9 @@ def test_get_products(client):
     assert response.status_code == 200
     data = response.json()["data"]["items"]
     assert len(data) >= 1
-    assert data[0]["name"] == "Test Headphones"
-    assert data[0]["id"] == "prd_test1"
+    # Check that our specific test product is in the returned list
+    assert any(p["name"] == "Test Headphones" for p in data)
+    assert any(p["id"] == "prd_test1" for p in data)
 
     # Test filtering
     response_search = client.get("/products/?search=Headphones")

@@ -33,6 +33,8 @@ class Order(Base):
     street_address = Column(String)
     city = Column(String)
     zip_code = Column(String)
+    destination_lat = Column(Float, nullable=True)
+    destination_lon = Column(Float, nullable=True)
     subtotal = Column(Float)
     delivery_fee = Column(Float)
     total = Column(Float)
@@ -40,6 +42,7 @@ class Order(Base):
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     departed_at = Column(DateTime, nullable=True)
+    drone_id = Column(String, nullable=True)
 
 class DroneStatus(Base):
     __tablename__ = "drone_status"
