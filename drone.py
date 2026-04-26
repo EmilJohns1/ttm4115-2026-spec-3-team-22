@@ -1,3 +1,5 @@
+# DRONE NEEDS METHOD FOR LANDING
+
 import paho.mqtt.client as mqtt
 from threading import Thread
 import random
@@ -6,8 +8,9 @@ from stmpy import Machine, Driver
 
 broker = "localhost"
 port = 1883
-DroneID = f'drone-{5}'
-# DroneID = f'drone-{random.randint(0, 100)}'
+# DroneID = f'drone-{5}'
+batteryLevel = 100 # upon start drone fully charged
+DroneID = f'drone-{random.randint(0, 100)}'
 
 class MQTT_Drone:
     def __init__(self):
@@ -51,10 +54,10 @@ class Drone:
     def on_idle(self):
         self.goalLatitude = 0
         self.goalLongitude = 0
-        self.batteryLevel = 0
+        # self.batteryLevel = 100
         payload = mess.DroneHello()
         payload.DroneID = DroneID
-        payload.Battery = self.batteryLevel
+        payload.Battery = batteryLevel
         self.mqttclient.publish(f"delivery-system/drone/{DroneID}/readiness", payload.SerializeToString())
 
     def update_goal(self, Latitude, Longitude):

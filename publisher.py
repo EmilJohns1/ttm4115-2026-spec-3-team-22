@@ -25,10 +25,11 @@ def publish(client, topic, payload):
 def run():
     client = connect()
     client.loop_start()
-    task = messages_pb2.TaskAssignment()
-    task.Latitude = 14.3456
-    task.Longitude = -122.3456
-    publish(client, "test", task.SerializeToString())
+    task = messages_pb2.AssignmentRequest()
+    task.Latitude = 17.4567
+    task.Longitude = -19.231736
+
+    publish(client, f"delivery-system/management/request", task.SerializeToString())
     client.loop_stop()
 
 if __name__ == '__main__':

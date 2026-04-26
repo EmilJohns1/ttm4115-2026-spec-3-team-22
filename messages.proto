@@ -24,11 +24,13 @@ message DroneHello{
 }
 
 message ArrivalConfirmation{
-    optional uint32 DroneID = 1;
+    optional string DroneID = 1;
 }
 
 message DroneAssignment{
-    required uint32 DroneID = 1;
+    required string DroneID = 1;
+    required double Latitude = 2;
+    required double Longitude = 3;
 }
 
 message AssignmentFailed{
