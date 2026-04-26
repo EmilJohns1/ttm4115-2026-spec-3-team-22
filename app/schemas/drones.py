@@ -7,7 +7,7 @@ class DroneStatusBase(BaseModel):
     battery: float
     gps_lat: Optional[float] = None
     gps_lon: Optional[float] = None
-    current_order_id: Optional[int] = None
+    current_order_id: Optional[str] = None
 
 class DroneStatusCreate(DroneStatusBase):
     pass
@@ -16,7 +16,7 @@ class DroneStatusUpdate(BaseModel):
     battery: Optional[float] = None
     gps_lat: Optional[float] = None
     gps_lon: Optional[float] = None
-    current_order_id: Optional[int] = None
+    current_order_id: Optional[str] = None
 
 class DroneStatus(DroneStatusBase):
     last_updated: datetime

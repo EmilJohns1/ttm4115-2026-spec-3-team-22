@@ -1,19 +1,33 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 
-from app.routers import users, orders, drones
-from app.db.base import Base, engine
+from app.routers import users, orders, drones, products
+from app.db.base import Base, engine, SessionLocal
 from app.db import models
+from app.db.seed import seed_db
 
-Base.metadata.create_all(bind=engine)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup logic
+    Base.metadata.create_all(bind=engine)
+    db = SessionLocal()
+    try:
+        seed_db(db)
+    finally:
+        db.close()
+    yield
+    # Shutdown logic
 
 app = FastAPI(
     title="TTM4115 Backend",
     description="A sample FastAPI project for TTM4115.",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 app.include_router(users.router)
 app.include_router(orders.router)
+app.include_router(products.router)
 app.include_router(drones.router)
 
 

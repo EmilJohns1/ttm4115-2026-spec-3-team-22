@@ -1,22 +1,41 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field
+from typing import Optional, List, Dict
 from datetime import datetime
 
+class Address(BaseModel):
+    streetAddress: str
+    city: str
+    zipCode: str
+
+class Amount(BaseModel):
+    subtotal: float
+    deliveryFee: float
+    total: float
+    currency: str
+
 class OrderBase(BaseModel):
-    user_id: int
-    status: str = "pending"
-    drone_id: Optional[str] = None
-    destination: str
+    userId: str
+    productId: str
+    deliveryAddress: Address
 
 class OrderCreate(OrderBase):
     pass
 
-class OrderUpdate(BaseModel):
-    status: Optional[str] = None
-    drone_id: Optional[str] = None
-
 class Order(OrderBase):
-    id: int
-    created_at: datetime
+    id: str
+    productName: str
+    status: str
+    amount: Amount
+    createdAt: datetime
+    updatedAt: datetime
+    departedAt: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
+
+class OrderEnvelope(BaseModel):
+    data: Optional[Order] = None
+    error: Optional[dict] = None
+
+class OrderListEnvelope(BaseModel):
+    data: Optional[Dict[str, List[Order]]] = None
+    error: Optional[dict] = None

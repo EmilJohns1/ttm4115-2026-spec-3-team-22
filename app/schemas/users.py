@@ -1,19 +1,33 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 
+class Address(BaseModel):
+    streetAddress: str
+    city: str
+    zipCode: str
+
 class UserBase(BaseModel):
+    name: str
     email: EmailStr
-    delivery_address: Optional[str] = None
-    payment_token: Optional[str] = None
+    deliveryAddress: Optional[Address] = None
 
 class UserCreate(UserBase):
-    pass
+    password: str
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
 
 class UserUpdate(BaseModel):
-    delivery_address: Optional[str] = None
-    payment_token: Optional[str] = None
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    deliveryAddress: Optional[Address] = None
 
 class User(UserBase):
-    id: int
+    id: str
 
     model_config = {"from_attributes": True}
+
+class UserEnvelope(BaseModel):
+    data: Optional[User] = None
+    error: Optional[dict] = None

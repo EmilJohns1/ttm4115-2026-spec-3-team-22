@@ -4,35 +4,43 @@ A sample **FastAPI** backend project for TTM4115.
 
 ## Features
 
-- RESTful CRUD API for multiple resources (Users, Orders, Drones, Items).
-- SQLite Database integration via SQLAlchemy ORM.
-- Pydantic v2 request / response validation.
-- Auto-generated interactive docs at `/docs` (Swagger UI) and `/redoc`
-- pytest test suite that runs against an in-memory SQLite database.
+- RESTful API for an e-commerce & drone delivery platform (Users, Products, Orders, Drones).
+- SQLite Database integration via SQLAlchemy ORM (Flattened relational data).
+- Pydantic v2 schemas mapping nested JSON to flat database fields (`Address`, `Amount`).
+- Standardized API Response Envelopes (`{ "data": {}, "error": null }`).
+- Built-in User Authentication (Registration / Login) with PBKDF2 password hashing and salting.
+- Automatic Database Seeding (injects sample products with randomized 200 x 200 images on startup).
+- Auto-generated interactive docs at `/docs` (Swagger UI) and `/redoc`.
+- Pytest test suite that runs against an in-memory SQLite database.
 
 ## Project structure
 
 ```
 .
 ├── app/
-│   ├── main.py          # FastAPI application & root endpoint
+│   ├── main.py          # FastAPI application & lifespan startup hooks
 │   ├── db/
 │   │   ├── base.py      # SQLAlchemy setup & base definitions
 │   │   ├── deps.py      # FastAPI Dependency Injection (get_db)
-│   │   └── models.py    # SQLAlchemy database models
+│   │   ├── models.py    # SQLAlchemy flattened database models
+│   │   └── seed.py      # Automatic database seeding logic
 │   ├── routers/
-│   │   ├── users.py     # /users CRUD operations
-│   │   ├── orders.py    # /orders CRUD operations
-│   │   └── drones.py    # /drones CRUD operations
+│   │   ├── users.py     # Auth & user profile operations
+│   │   ├── products.py  # Products catalog
+│   │   ├── orders.py    # Orders & drone tracking endpoints
+│   │   └── drones.py    # Drone telemetry
 │   └── schemas/
-│       ├── users.py     # User Pydantic schemas
-│       ├── orders.py    # Order Pydantic schemas
-│       └── drones.py    # Drone Pydantic schemas
+│       ├── users.py     # User schemas (incl. auth)
+│       ├── products.py  # Product schemas
+│       ├── orders.py    # Order schemas & nested data wrappers
+│       └── drones.py    # Drone schemas
+├── api-spec-trimmed.md  # Detailed API specifications mapping
 ├── tests/
 │   ├── conftest.py      # Test overrides and database fixtures
-│   ├── test_users.py    # pytest tests for users
-│   ├── test_orders.py   # pytest tests for orders
-│   └── test_drones.py   # pytest tests for drones
+│   ├── test_users.py    
+│   ├── test_products.py 
+│   ├── test_orders.py   
+│   └── test_drones.py   
 ├── requirements.txt
 ├── Dockerfile           # Docker image setup
 ├── docker-compose.yml   # Docker Compose configuration
@@ -61,8 +69,13 @@ If you prefer running without Docker:
 ### 1. Create and activate a virtual environment
 
 ```bash
+# Windows
 python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
+.\.venv\Scripts\activate
+
+# Mac/Linux
+python3 -m venv .venv
+source .venv/bin/activate
 ```
 
 ### 2. Install dependencies
@@ -76,22 +89,23 @@ pip install -r requirements.txt
 ```bash
 uvicorn app.main:app --reload
 ```
+*Note: The database is automatically seeded with sample products (with Lorem Picsum images) when the server starts!*
+
+## API Endpoints (Core overview)
+
+Most endpoints return data modeled by our standardized envelope: `{ "data": <object>, "error": <error_object> }`.
+
+- **Auth**: `POST /users/register`, `POST /users/login`
+- **Users**: `GET /users/me`, `PATCH /users/me`
+- **Products**: `GET /products` (with `search` and `category` filters), `GET /products/{id}`
+- **Orders**: `POST /orders`, `GET /orders` (with `userId` filters), `GET /orders/active`, `GET /orders/recent`, `GET /orders/{id}`, `GET /orders/{id}/tracking`
+- **Drones**: Internal telemetry REST routes (simulated MQTT ingestion).
+
+See `http://localhost:8000/docs` while running for the full interactive schema!
 
 ## Running Tests
 
-Tests execute against an isolated in-memory SQLite database, so they will not affect your local `.db` file.
-
-To run the suite locally:
-
-```bash
-pytest tests/
-```
-
-## API endpoints
-
-Will add later, can be found at /docs or /redoc
-
-## Running tests
+Tests execute against an isolated testing SQLite database (`test.db`), avoiding conflicts with local dev data.
 
 ```bash
 pytest tests/ -v

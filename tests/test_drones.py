@@ -34,13 +34,13 @@ def test_read_drone(client):
 def test_update_drone(client):
     response = client.put(
         "/drones/D101",
-        json={"battery": 85.5, "current_order_id": 1},
+        json={"battery": 85.5, "current_order_id": "ord_testing123"},
     )
     assert response.status_code == 200
     data = response.json()
     assert data["drone_id"] == "D101"
     assert data["battery"] == 85.5
-    assert data["current_order_id"] == 1
+    assert data["current_order_id"] == "ord_testing123"
 
 def test_read_nonexistent_drone(client):
     response = client.get("/drones/NON_EXISTENT")
