@@ -9,9 +9,12 @@ from stmpy import Machine, Driver
 
 broker = "localhost"
 port = 1883
-# DroneID = f'drone-{5}'
 batteryLevel = 100 # upon start drone fully charged
 DroneID = f'drone-{random.randint(0, 100)}'
+currentOrderID = '0'
+# Dock address
+baseLatitude = 63.4335
+baseLongitude = 10.4
 
 class MQTT_Drone:
     def __init__(self):
@@ -29,9 +32,11 @@ class MQTT_Drone:
         if message == "assignment":
             report = mess.TaskAssignment()
             report.ParseFromString(msg.payload)
+            global currentOrderID
+            currentOrderID = report.OrderID
             self.stm_driver.send("task_assignment", "drone", args=[str(report.Latitude), str(report.Longitude)])
-        elif message == "confirmation":
-            self.stm_driver.send("arrival_confirmation", "drone")
+        # elif message == "confirmation":
+        #     self.stm_driver.send("arrival_confirmation", "drone")
         # self.count = self.count + 1
         # if self.count == 20:
         #     self.client.disconnect()
@@ -55,6 +60,8 @@ class Drone:
     def on_idle(self):
         self.goalLatitude = 0
         self.goalLongitude = 0
+        global currentOrderID
+        currentOrderID = '0'
         # self.batteryLevel = 100
         payload = mess.DroneHello()
         payload.DroneID = DroneID
@@ -78,6 +85,27 @@ class Drone:
         status.Speed = 58.47
         print(status)
         self.mqttclient.publish(f"delivery-system/drone/{DroneID}/status", status.SerializeToString()) # test message
+        if status.Latitude == self.goalLatitude and status.Longitude == self.goalLongitude:
+            confirm = mess.ArrivalConfirmation()
+            confirm.DroneID = DroneID
+            confirm.OrderID = currentOrderID
+            self.goalLatitude = baseLatitude
+            self.goalLongitude = baseLongitude
+            self.mqttclient.publish(f"delivery-system/drone/{DroneID}/confirmation", status.SerializeToString())
+            self.stm_driver.send("landing", "drone")
+
+    def send_status_on_return(self):
+        # TODO: pass status data from sensors
+        status = mess.Status()
+        status.Date = 1234567
+        status.Battery_level = 74
+        status.Latitude = 17.456782
+        status.Longitude = -19.2317
+        status.Speed = 58.47
+        print(status)
+        self.mqttclient.publish(f"delivery-system/drone/{DroneID}/status", status.SerializeToString()) # test message
+        if status.Latitude == self.goalLatitude and status.Longitude == self.goalLongitude:
+            self.stm_driver.send("landing", "drone")
 
 t0 = {
     "source": "initial",
@@ -107,26 +135,18 @@ t1_update = {
 t2 = {
     "trigger": "landing", # needs to be a trigger to driver coming from sensor
     "source": "flight",
-    "target": "idle",
-    "effect": "on_idle",
-}
-
-# up to discussion: do we need 'return' state? or will second usage of 'flight' suffice?
-t3 = {
-    "trigger": "arrival_confirmation",   # from mqtt message
-    "source": "idle",
     "target": "return",
     "effect": "start_timer('t', 2000)",
 }
 
-t3_update = {
+t2_update = {
     "trigger": "t",
     "source": "return",
     "target": "return",
     "effect": "send_status; start_timer('t', 2000)",
 }
 
-t4 = {
+t3 = {
     "trigger": "landing", # also needs to be a trigger to driver coming from sensor
     "source": "return",
     "target": "idle",
@@ -135,7 +155,7 @@ t4 = {
 
 def start_machine():
     drone = Drone()
-    drone_machine = Machine(transitions=[t0, t1, t1_update, t2, t3, t3_update, t4], states=[flight], obj=drone, name="drone")
+    drone_machine = Machine(transitions=[t0, t1, t1_update, t2, t2_update, t3], states=[flight], obj=drone, name="drone")
     drone.stm = drone_machine
 
     driver = Driver()
@@ -144,6 +164,7 @@ def start_machine():
     myclient = MQTT_Drone()
     drone.mqttclient = myclient.client
     myclient.stm_driver = driver
+    drone.stm_driver = driver
 
     # driver.start(keep_active=True)    # started in MQTT_Drone._on_connect() to prevent race condition
     myclient.start(broker, port)

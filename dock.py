@@ -10,8 +10,8 @@ port = 1883
 DockID = f'dock-{random.randint(0,1000)}'
 fleet = []
 assignments = []  # this is sorta dangerous cuz in theory there exists a possibility of popping and appending data at the same time by diff threads. Im choosing to be whimsical and ignore it for now
-baseLatitude = 17.456782
-baseLongitude = -19.2317
+baseLatitude = 63.4335
+baseLongitude = 10.4
 
 # my super scientific method of calculating battery levels
 #    range of standard delivery drone:
@@ -50,6 +50,7 @@ class MQTT_Dock:
             payloadLocation = mess.AssignmentRequest()
             payloadLocation.ParseFromString(msg.payload)
             assignments.append({"orderID": payloadLocation.OrderID, "lat": payloadLocation.Latitude, "long": payloadLocation.Longitude})
+            print("assignments: {}".format(assignments))
             self.stm_driver.send("assignment_request", "dock")
         elif message == "readiness":
             payloadHello = mess.DroneHello()
@@ -114,6 +115,12 @@ class Dock:
                     print("fleet:" + str(fleet))
                     print("assignment made: {} {} {}".format(drone["droneID"], latitude, longitude))
                     self.mqttclient.publish(f"delivery-system/management/assignment", message.SerializeToString())
+                    message = mess.TaskAssignment()
+                    message.Latitude = latitude
+                    message.Longitude = longitude
+                    message.OrderID = assignment["orderID"]
+                    droneID = drone["droneID"]
+                    self.mqttclient.publish(f"delivery-system/drone/{droneID}/assignment", message.SerializeToString())
                     pass
         self.stm_driver.send("clear", "dock")
 
