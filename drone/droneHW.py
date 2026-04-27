@@ -1,15 +1,22 @@
-from sensors import get_acceleration, get_direction, get_joystick
+from drone.sensors import get_acceleration, get_direction, get_joystick
 import math
 import time
+from threading import Thread
 
-class Drone:
+class DroneHW:
 	def __init__(self):
-		self.position = [0, 0] # simulated GPS
+		self.position = [6343350, 1040000] # simulated GPS
 		self.velocity = [0, 0]
 		self.state = "IDLE"
 		self.battery = 100
 		self.goal = None
 		self.last_time = time.time()
+		try:
+			thread = Thread(target=self.update)
+			thread.start()
+		except KeyboardInterrupt:
+			print("Interrupted")
+			self.client.disconnect()
 
 	def set_goal(self, x, y):
 		self.goal = [x, y]
@@ -39,14 +46,14 @@ class Drone:
 				self.goal = None
 
 	def update_battery(self):
-		if self.state == "DELIVERING" or self.state == "RETURNING":
-			if self.battery > 0:
-				self.battery -= 0.005
-			if self.battery <= 0:
-				self.battery = 0
+		#if self.state == "DELIVERING" or self.state == "RETURNING":
+		if self.battery > 0:
+			self.battery -= 0.005
+		if self.battery <= 0:
+			self.battery = 0
 		
-		if self.state == "IDLE":
-			self.battery += 0.02
+		#if self.state == "IDLE":
+			#self.battery += 0.02
 
 	def get_speed(self):
 		return 1.0
@@ -54,10 +61,10 @@ class Drone:
 	def update_position(self):
 		movement = get_joystick()
 
-		step = 0.5 # movement per click
+		step = 1 # movement per click
 
 		for event in movement:
-			if event.action == "pressed":
+			if event.action == "pressed" or event.action == "held":
 				if event.direction == "up":
 					self.position[1] += step
 				elif event.direction == "down":
@@ -69,9 +76,9 @@ class Drone:
 	
 
 	def update(self):
-		if self.state == "DELIVERING" or self.state == "RETURNING":
+		while True:
 			self.update_position()
 			self.check_arrival()
-		
-		self.update_battery()
+			self.update_battery()
+			time.sleep(0.1)
 

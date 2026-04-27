@@ -1,7 +1,7 @@
-from drone import Drone
+from droneHW import DroneHW
 import time
 
-drone = Drone()
+drone = DroneHW()
 drone.set_goal(5, 5)
 
 last_print = time.time()
