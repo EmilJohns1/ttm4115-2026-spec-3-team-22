@@ -23,12 +23,14 @@ class MQTT_Gateway:
             message = mess.TaskAssignment()
             message.Latitude = payload.Latitude
             message.Longitude = payload.Longitude
+            message.OrderID = payload.OrderID
             droneID = payload.DroneID
             # here you have assignment info if you wanna use it
             # ! error message is in topic failure
             self.client.publish(f"delivery-system/drone/{droneID}/assignment", message.SerializeToString())
         elif message == "failure":
             payload = mess.AssignmentFailed()
+            payload.ParseFromString(msg.payload)
             errCode = payload.ErrCode
             if errCode == 503:
                 print("Err 503: No available drones")
@@ -53,6 +55,7 @@ class MQTT_Gateway:
         task = mess.AssignmentRequest()
         task.Latitude = latitude
         task.Longitude = longitude
+        task.OrderID = "blablablatest"
         self.client.publish(f"delivery-system/management/request", task.SerializeToString())
 
 # def run():

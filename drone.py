@@ -1,4 +1,5 @@
 # DRONE NEEDS METHOD FOR LANDING
+# also needs maybe simulation of battery discharging
 
 import paho.mqtt.client as mqtt
 from threading import Thread
@@ -144,7 +145,7 @@ def start_machine():
     drone.mqttclient = myclient.client
     myclient.stm_driver = driver
 
-    # driver.start(keep_active=True)    # started in MQTT_Drone._on_connect() to prevent race
+    # driver.start(keep_active=True)    # started in MQTT_Drone._on_connect() to prevent race condition
     myclient.start(broker, port)
 
 

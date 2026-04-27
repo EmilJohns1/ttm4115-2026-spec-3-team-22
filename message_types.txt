@@ -1,3 +1,5 @@
+note to self: TaskAssignment and DroneAssignment should include orderID (string)
+
 From drone:
 1. status (GPS, Battery, Speed)  // what channel
 

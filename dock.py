@@ -49,7 +49,7 @@ class MQTT_Dock:
         if message == "request":
             payloadLocation = mess.AssignmentRequest()
             payloadLocation.ParseFromString(msg.payload)
-            assignments.append({"lat": payloadLocation.Latitude, "long": payloadLocation.Longitude})
+            assignments.append({"orderID": payloadLocation.OrderID, "lat": payloadLocation.Latitude, "long": payloadLocation.Longitude})
             self.stm_driver.send("assignment_request", "dock")
         elif message == "readiness":
             payloadHello = mess.DroneHello()
@@ -87,19 +87,25 @@ class Dock:
             if not fleet:
                 print("Fleet is empty")
                 message = mess.AssignmentFailed()
+                message.OrderID = assignment["orderID"]
                 message.ErrCode = 503  # HTTP Service Unavailable hihi
+                assignments[:] = [a for a in assignments if a != assignment]
                 self.mqttclient.publish(f"delivery-system/management/failure", message.SerializeToString())
-                return
+                pass
             latitude = assignment["lat"]
             longitude = assignment["long"]
             minimum_battery = required_battery(distance(latitude, longitude, baseLatitude, baseLongitude)) + 8
             if minimum_battery > 100:
                 message = mess.AssignmentFailed()
+                message.OrderID = assignment["orderID"]
                 message.ErrCode = 413 # HTTP Content Too Large hihi
+                assignments[:] = [a for a in assignments if a != assignment]
                 self.mqttclient.publish(f"delivery-system/management/failure", message.SerializeToString())
+                pass
             for drone in fleet:
                 if drone["battery"] > minimum_battery:
                     message = mess.DroneAssignment()
+                    message.OrderID = assignment["orderID"]
                     message.DroneID = drone["droneID"]
                     message.Latitude = latitude
                     message.Longitude = longitude
