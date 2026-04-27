@@ -1,46 +1,77 @@
-from sensors import get_acceleration, get_direction
+from sensors import get_acceleration, get_direction, get_joystick
 import math
+import time
 
 class Drone:
 	def __init__(self):
-		self.position = [63.41606, 10.40722] # simulated GPS
-		self.state = "DELIVERING"
+		self.position = [0, 0] # simulated GPS
+		self.velocity = [0, 0]
+		self.state = "IDLE"
 		self.battery = 100
+		self.goal = None
+		self.last_time = time.time()
+
+	def set_goal(self, x, y):
+		self.goal = [x, y]
+		self.state = "DELIVERING"
+
+	def distance_to_goal(self):
+		if self.goal is None:
+			return None
+
+		dx = self.goal[0] - self.position[0]
+		dy = self.goal[1] - self.position[1]
+
+		return math.sqrt(dx**2 + dy**2)
+	
+	def check_arrival(self):
+		distance = self.distance_to_goal()
+
+		if distance is not None and distance < 0.5:
+			if self.state == "DELIVERING":
+				print("Arrived at destination!")
+				self.set_goal(0, 0)
+				self.state = "RETURNING"
+				
+			elif self.state == "RETURNING":
+				print("Returned to dock!")
+				self.state = "IDLE"
+				self.goal = None
 
 	def update_battery(self):
-		if self.battery > 0:
-			self.battery -= 0.25
-		if self.battery <= 0:
-			self.battery = 0
+		if self.state == "DELIVERING" or self.state == "RETURNING":
+			if self.battery > 0:
+				self.battery -= 0.005
+			if self.battery <= 0:
+				self.battery = 0
+		
+		if self.state == "IDLE":
+			self.battery += 0.02
 
+	def get_speed(self):
+		return 1.0
+    
 	def update_position(self):
-		acceleration = get_acceleration()
-		direction = get_direction()
+		movement = get_joystick()
 
-		# convert compass values to radians
-		theta = math.radians(direction)
+		step = 0.5 # movement per click
 
-		dx = acceleration['x']
-		dy = acceleration['y']
-
-		#print(acceleration)
-
-		threshold = 0.05
-
-    # threshold for noise
-		if abs(dx) < threshold:
-			dx = 0
-		if abs(dy) < threshold:
-			dy = 0
-
-		x_pos = dx*math.cos(theta) - dy*math.sin(theta)
-		y_pos = dx*math.sin(theta) + dy*math.cos(theta)
-
-		scale = 0.01
-
-		self.position[0] += x_pos*scale
-		self.position[1] += y_pos*scale
+		for event in movement:
+			if event.action == "pressed":
+				if event.direction == "up":
+					self.position[1] += step
+				elif event.direction == "down":
+					self.position[1] -= step
+				elif event.direction == "right":
+					self.position[0] += step
+				elif event.direction == "left":
+					self.position[0] -= step
+	
 
 	def update(self):
-		self.update_position()
+		if self.state == "DELIVERING" or self.state == "RETURNING":
+			self.update_position()
+			self.check_arrival()
+		
 		self.update_battery()
+
