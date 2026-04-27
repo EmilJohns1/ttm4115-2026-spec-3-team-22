@@ -1,15 +1,22 @@
-from sensors import get_acceleration, get_direction, get_joystick
+from drone.sensors import get_acceleration, get_direction, get_joystick
 import math
 import time
+from threading import Thread
 
-class Drone:
+class DroneHW:
 	def __init__(self):
-		self.position = [0, 0] # simulated GPS
+		self.position = [63.4335, 10.4] # simulated GPS
 		self.velocity = [0, 0]
 		self.state = "IDLE"
 		self.battery = 100
 		self.goal = None
 		self.last_time = time.time()
+		try:
+			thread = Thread(target=self.update)
+			thread.start()
+		except KeyboardInterrupt:
+			print("Interrupted")
+			self.client.disconnect()
 
 	def set_goal(self, x, y):
 		self.goal = [x, y]
@@ -54,7 +61,7 @@ class Drone:
 	def update_position(self):
 		movement = get_joystick()
 
-		step = 0.5 # movement per click
+		step = 0.01 # movement per click
 
 		for event in movement:
 			if event.action == "pressed":
@@ -69,9 +76,9 @@ class Drone:
 	
 
 	def update(self):
-		if self.state == "DELIVERING" or self.state == "RETURNING":
-			self.update_position()
-			self.check_arrival()
-		
+		#if self.state == "DELIVERING" or self.state == "RETURNING":
+		self.update_position()
+		self.check_arrival()
+
 		self.update_battery()
 

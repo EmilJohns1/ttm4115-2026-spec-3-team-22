@@ -1,13 +1,11 @@
-# DRONE NEEDS METHOD FOR LANDING
-# also needs maybe simulation of battery discharging
-
 import paho.mqtt.client as mqtt
 from threading import Thread
 import random
 import messages_pb2 as mess
 from stmpy import Machine, Driver
+from drone.droneHW import DroneHW
 
-broker = "localhost"
+broker = "10.132.63.190"
 port = 1883
 batteryLevel = 100 # upon start drone fully charged
 DroneID = f'drone-{random.randint(0, 100)}'
@@ -57,6 +55,9 @@ class MQTT_Drone:
             self.client.disconnect()
 
 class Drone:
+    #def __init__(self):
+        #droneHW = DroneHW()
+
     def on_idle(self):
         self.goalLatitude = 0
         self.goalLongitude = 0
@@ -77,12 +78,13 @@ class Drone:
 
     def send_status(self):
         # TODO: pass status data from sensors
+        
         status = mess.Status()
         status.Date = 1234567
-        status.Battery_level = 74
-        status.Latitude = 17.456782
-        status.Longitude = -19.2317
-        status.Speed = 58.47
+        status.Battery_level = self.droneHW.battery
+        status.Latitude = self.droneHW.position[0]
+        status.Longitude = self.droneHW.position[1]
+        status.Speed = 54 # 15 m/s
         print(status)
         self.mqttclient.publish(f"delivery-system/drone/{DroneID}/status", status.SerializeToString()) # test message
         if status.Latitude == self.goalLatitude and status.Longitude == self.goalLongitude:
@@ -98,10 +100,10 @@ class Drone:
         # TODO: pass status data from sensors
         status = mess.Status()
         status.Date = 1234567
-        status.Battery_level = 74
-        status.Latitude = 17.456782
-        status.Longitude = -19.2317
-        status.Speed = 58.47
+        status.Battery_level = self.droneHW.battery
+        status.Latitude = self.droneHW.position[0]
+        status.Longitude = self.droneHW.position[1]
+        status.Speed = 54 # 15 m/s
         print(status)
         self.mqttclient.publish(f"delivery-system/drone/{DroneID}/status", status.SerializeToString()) # test message
         if status.Latitude == self.goalLatitude and status.Longitude == self.goalLongitude:
@@ -143,7 +145,7 @@ t2_update = {
     "trigger": "t",
     "source": "return",
     "target": "return",
-    "effect": "send_status; start_timer('t', 2000)",
+    "effect": "send_status_on_return; start_timer('t', 2000)",
 }
 
 t3 = {
@@ -165,6 +167,9 @@ def start_machine():
     drone.mqttclient = myclient.client
     myclient.stm_driver = driver
     drone.stm_driver = driver
+
+    droneHW = DroneHW()
+    drone.droneHW = droneHW
 
     # driver.start(keep_active=True)    # started in MQTT_Drone._on_connect() to prevent race condition
     myclient.start(broker, port)
