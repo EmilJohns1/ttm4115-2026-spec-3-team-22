@@ -1,5 +1,11 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 from app.routers import users, orders, drones, products
 from app.db.base import Base, engine, SessionLocal
@@ -30,6 +36,18 @@ app = FastAPI(
     description="A sample FastAPI project for TTM4115.",
     version="0.1.0",
     lifespan=lifespan,
+)
+
+frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
+
+allow_origins = [url.strip() for url in frontend_url.split(",")] if frontend_url else ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allow_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(users.router)

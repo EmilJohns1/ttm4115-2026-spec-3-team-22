@@ -8,3 +8,4 @@ paho-mqtt
 protobuf
 passlib[argon2]
 geopy
+python-dotenv
