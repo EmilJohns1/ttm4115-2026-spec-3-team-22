@@ -19,6 +19,8 @@ baseLongitude = 10.4
 #       16 km (with payload 30 kg)
 
 def distance(lat1, lon1, lat2, lon2):
+    lat1 = lat1 / 100000
+    lon1 = lon1 / 100000
     r = 6371 # km
     p = pi / 180
     a = 0.5 - cos((lat2-lat1)*p)/2 + cos(lat1*p) * cos(lat2*p) * (1-cos((lon2-lon1)*p))/2

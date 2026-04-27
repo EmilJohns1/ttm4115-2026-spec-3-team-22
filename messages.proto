@@ -22,7 +22,7 @@ message AssignmentRequest{
 
 message DroneHello{
     required string DroneID = 1;
-    required uint32 Battery = 2;
+    required float Battery = 2;
 }
 
 message ArrivalConfirmation{

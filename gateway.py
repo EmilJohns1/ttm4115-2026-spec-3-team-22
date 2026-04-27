@@ -20,14 +20,14 @@ class MQTT_Gateway:
         if message == "assignment":
             payload = mess.DroneAssignment()
             payload.ParseFromString(msg.payload)
-            message = mess.TaskAssignment()
-            message.Latitude = payload.Latitude
-            message.Longitude = payload.Longitude
-            message.OrderID = payload.OrderID
-            droneID = payload.DroneID
+            # message = mess.TaskAssignment()
+            # message.Latitude = payload.Latitude
+            # message.Longitude = payload.Longitude
+            # message.OrderID = payload.OrderID
+            # droneID = payload.DroneID
             # here you have assignment info if you wanna use it
             # ! error message is in topic failure
-            self.client.publish(f"delivery-system/drone/{droneID}/assignment", message.SerializeToString())
+            # self.client.publish(f"delivery-system/drone/{droneID}/assignment", message.SerializeToString())
         elif message == "failure":
             payload = mess.AssignmentFailed()
             payload.ParseFromString(msg.payload)
@@ -71,7 +71,7 @@ class MQTT_Gateway:
 if __name__ == '__main__':
     myclient = MQTT_Gateway()
     myclient.start(broker, port)
-    a = 17.4567
-    b = -19.231736
+    a = 6343352
+    b = 1040000
     myclient.send_drone_request(a, b)
 
