@@ -66,7 +66,7 @@ class Drone:
         # self.batteryLevel = 100
         payload = mess.DroneHello()
         payload.DroneID = DroneID
-        payload.Battery = batteryLevel
+        payload.Battery = self.droneHW.battery
         self.mqttclient.publish(f"delivery-system/drone/{DroneID}/readiness", payload.SerializeToString())
 
     def update_goal(self, Latitude, Longitude):
@@ -86,7 +86,7 @@ class Drone:
         status.Longitude = self.droneHW.position[1]
         status.Speed = 54 # 15 m/s
         print(status)
-        print(str(status.Latitude) + " " + str(type(status.Latitude)) + " " + str(self.goalLatitude )+ " " + str(type(self.goalLatitude)))
+        #print(str(status.Latitude) + " " + str(type(status.Latitude)) + " " + str(self.goalLatitude )+ " " + str(type(self.goalLatitude)))
         self.mqttclient.publish(f"delivery-system/drone/{DroneID}/status", status.SerializeToString()) # test message
         if str(status.Latitude) == self.goalLatitude and str(status.Longitude) == self.goalLongitude:
             print("success")
