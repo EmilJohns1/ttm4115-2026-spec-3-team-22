@@ -7,3 +7,7 @@ def get_acceleration():
 
 def get_direction():
 	return sense.get_compass()
+
+def get_joystick():
+	events = sense.stick.get_events()
+	return events
