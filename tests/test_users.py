@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 def test_read_user_me_not_found(client):
-    response = client.get("/users/me?userId=usr_notexist")
+    response = client.get("/users/me?userId=notexist")
     assert response.status_code == 200
     assert response.json()["error"]["code"] == "NOT_FOUND"
 
@@ -23,7 +23,7 @@ def test_user_registration_and_login(client):
     assert reg_resp.status_code == 200
     reg_data = reg_resp.json()["data"]
     assert reg_data["email"] == "jane@example.com"
-    assert "usr_" in reg_data["id"]
+    assert "" in reg_data["id"]
 
     # Test Duplicate Register
     dup_resp = client.post("/users/register", json={
@@ -58,7 +58,7 @@ def test_user_me_crud(client):
     
     db = TestingSessionLocal()
     new_user = models.User(
-        id="usr_test123",
+        id="test123",
         name="Test User",
         email="test@user.com",
         street_address="Testvegen 1",
@@ -70,16 +70,16 @@ def test_user_me_crud(client):
     db.close()
 
     # Test GET /users/me
-    response = client.get("/users/me?userId=usr_test123")
+    response = client.get("/users/me?userId=test123")
     assert response.status_code == 200
     data = response.json()["data"]
-    assert data["id"] == "usr_test123"
+    assert data["id"] == "test123"
     assert data["name"] == "Test User"
     assert data["deliveryAddress"]["city"] == "Trondheim"
 
     # Test PATCH /users/me
     response = client.patch(
-        "/users/me?userId=usr_test123",
+        "/users/me?userId=test123",
         json={
             "name": "Updated User",
             "deliveryAddress": {

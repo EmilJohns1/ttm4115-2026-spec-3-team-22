@@ -4,7 +4,6 @@ from contextlib import asynccontextmanager
 import os
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
 load_dotenv()
 
 from app.routers import users, orders, drones, products
@@ -24,12 +23,12 @@ async def lifespan(app: FastAPI):
         db.close()
     
     # Start MQTT background listener
-    #mqtt_service.start() Add this when we have the MQTT client implemented and ready to use
+    mqtt_service.start() #Add this when we have the MQTT client implemented and ready to use
     
     yield
     
     # Shutdown logic
-    #mqtt_service.stop()
+    mqtt_service.stop()
 
 app = FastAPI(
     title="TTM4115 Backend",

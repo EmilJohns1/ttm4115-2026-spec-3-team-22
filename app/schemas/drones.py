@@ -7,6 +7,7 @@ class DroneStatusBase(BaseModel):
     battery: float
     gps_lat: Optional[float] = None
     gps_lon: Optional[float] = None
+    speed: Optional[float] = None
     current_order_id: Optional[str] = None
 
 class DroneStatusCreate(DroneStatusBase):
@@ -16,6 +17,7 @@ class DroneStatusUpdate(BaseModel):
     battery: Optional[float] = None
     gps_lat: Optional[float] = None
     gps_lon: Optional[float] = None
+    speed: Optional[float] = None
     current_order_id: Optional[str] = None
 
 class DroneStatus(DroneStatusBase):

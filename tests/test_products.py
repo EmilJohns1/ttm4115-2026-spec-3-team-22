@@ -7,7 +7,7 @@ def test_get_products(client):
     
     db = TestingSessionLocal()
     new_product = models.Product(
-        id="prd_test1",
+        id="test1",
         name="Test Headphones",
         description="Noise cancelling",
         price=100.0,
@@ -26,7 +26,7 @@ def test_get_products(client):
     assert len(data) >= 1
     # Check that our specific test product is in the returned list
     assert any(p["name"] == "Test Headphones" for p in data)
-    assert any(p["id"] == "prd_test1" for p in data)
+    assert any(p["id"] == "test1" for p in data)
 
     # Test filtering
     response_search = client.get("/products/?search=Headphones")
@@ -42,10 +42,10 @@ def test_get_products(client):
     assert len(response_category.json()["data"]["items"]) >= 1
     
 def test_get_single_product(client):
-    # We assume 'prd_test1' exists from previous tests or our shared db fixture for tests
+    # We assume 'test1' exists from previous tests or our shared db fixture for tests
     # But since it might not be guaranteed in pytest ordering if rollback happens,
     # we'll just check format
-    response = client.get("/products/prd_test1")
+    response = client.get("/products/test1")
     assert response.status_code == 200
     
     # If not found (in isolated db), ensure format is an envelope
@@ -53,5 +53,5 @@ def test_get_single_product(client):
         assert response.json()["error"]["code"] == "NOT_FOUND"
     else:
         data = response.json()["data"]
-        assert data["id"] == "prd_test1"
+        assert data["id"] == "test1"
         assert data["price"] == 100.0

@@ -43,7 +43,7 @@ def register_user(user_in: schemas.UserCreate, db: Session = Depends(deps.get_db
     if db_user:
         return schemas.UserEnvelope(error={"code": "VALIDATION_ERROR", "message": "Email already registered"})
 
-    new_id = f"usr_{uuid.uuid4().hex[:8]}"
+    new_id = f"{uuid.uuid4().hex[:8]}"
     hashed_pw = _hash_password(user_in.password)
     
     new_user = models.User(

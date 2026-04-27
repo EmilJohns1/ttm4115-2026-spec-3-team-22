@@ -50,5 +50,6 @@ class DroneStatus(Base):
     battery = Column(Float)
     gps_lat = Column(Float, nullable=True)
     gps_lon = Column(Float, nullable=True)
+    speed = Column(Float, nullable=True)
     current_order_id = Column(String, ForeignKey("orders.id"), nullable=True)
     last_updated = Column(DateTime, server_default=func.now(), onupdate=func.now())

@@ -30,7 +30,8 @@ def _map_to_order_schema(db_order: models.Order) -> schemas.Order:
         ),
         createdAt=db_order.created_at,
         updatedAt=db_order.updated_at,
-        departedAt=db_order.departed_at
+        departedAt=db_order.departed_at,
+        drone_id=db_order.drone_id
     )
 
 @router.post("/", response_model=schemas.OrderEnvelope)
@@ -57,12 +58,13 @@ def create_order(order: schemas.OrderCreate, db: Session = Depends(deps.get_db))
         if location:
             dest_lat = location.latitude
             dest_lon = location.longitude
+            print(f"Geocoded address to lat: {dest_lat}, lon: {dest_lon}")
         else:
             dest_lat, dest_lon = 63.435, 10.4003  # default fallback (Trondheim)
     except Exception:
         dest_lat, dest_lon = 63.435, 10.4003
 
-    new_id = f"ord_{uuid.uuid4().hex[:8]}"
+    new_id = f"{uuid.uuid4().hex[:8]}"
     
     delivery_fee = 2.99 # Flat fee for simplicity, could be dynamic based on distance or other factors
     subtotal = product.price or 0.0
@@ -92,7 +94,7 @@ def create_order(order: schemas.OrderCreate, db: Session = Depends(deps.get_db))
 
     # After saving order, request a drone to the destination
     if hasattr(mqtt_service, "request_drone_assignment"):
-        mqtt_service.request_drone_assignment(lat=dest_lat, lon=dest_lon)
+        mqtt_service.request_drone_assignment(lat=dest_lat, lon=dest_lon, order_id=new_order.id)
 
     return schemas.OrderEnvelope(data=_map_to_order_schema(new_order))
 

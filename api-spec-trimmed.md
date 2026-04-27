@@ -56,7 +56,7 @@ Relevant error codes:
 ### User
 ```json
 {
-  "id": "usr_123",
+  "id": "123",
   "name": "John Doe",
   "email": "john@example.com",
   "deliveryAddress": {
@@ -70,12 +70,12 @@ Relevant error codes:
 ### Product
 ```json
 {
-  "id": "prd_123",
+  "id": "123",
   "name": "Wireless Headphones",
   "description": "Premium ANC headphones",
   "price": 79.99,
   "currency": "NOK",
-  "imageUrl": "https://cdn.example.com/products/prd_123.png",
+  "imageUrl": "https://cdn.example.com/products/123.png",
   "category": "audio",
   "available": true
 }
@@ -85,8 +85,8 @@ Relevant error codes:
 ```json
 {
   "id": "ord_123",
-  "userId": "usr_123",
-  "productId": "prd_123",
+  "userId": "123",
+  "productId": "123",
   "productName": "Wireless Headphones",
   "status": "in_transit",
   "deliveryAddress": {
@@ -134,11 +134,11 @@ Success response:
   "data": {
     "items": [
       {
-        "id": "prd_123",
+        "id": "123",
         "name": "Wireless Headphones",
         "price": 79.99,
         "currency": "NOK",
-        "imageUrl": "https://cdn.example.com/products/prd_123.png",
+        "imageUrl": "https://cdn.example.com/products/123.png",
         "category": "audio",
         "available": true
       }
@@ -154,12 +154,12 @@ Success response:
 ```json
 {
   "data": {
-    "id": "prd_123",
+    "id": "123",
     "name": "Wireless Headphones",
     "description": "Premium ANC headphones",
     "price": 79.99,
     "currency": "NOK",
-    "imageUrl": "https://cdn.example.com/products/prd_123.png",
+    "imageUrl": "https://cdn.example.com/products/123.png",
     "category": "audio",
     "available": true
   },
@@ -176,8 +176,8 @@ Success response:
 Request body:
 ```json
 {
-  "userId": "usr_123",
-  "productId": "prd_123",
+  "userId": "123",
+  "productId": "123",
   "deliveryAddress": {
     "streetAddress": "Sunnlandsvegen 35",
     "city": "Trondheim",
@@ -192,7 +192,7 @@ Success response:
   "data": {
     "id": "ord_123",
     "status": "confirmed",
-    "productId": "prd_123",
+    "productId": "123",
     "deliveryAddress": {
       "streetAddress": "Sunnlandsvegen 35",
       "city": "Trondheim",
@@ -348,7 +348,7 @@ Success response:
 ```json
 {
   "data": {
-    "id": "usr_123",
+    "id": "123",
     "name": "John Doe",
     "email": "john@example.com",
     "deliveryAddress": {
@@ -368,7 +368,7 @@ Partial update of `name`, `email`, `deliveryAddress`.
 Request body example:
 ```json
 {
-  "userId": "usr_123",
+  "userId": "123",
   "deliveryAddress": {
     "streetAddress": "Kongens gate 31",
     "city": "Trondheim",
