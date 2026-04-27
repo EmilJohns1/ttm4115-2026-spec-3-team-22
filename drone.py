@@ -11,8 +11,8 @@ batteryLevel = 100 # upon start drone fully charged
 DroneID = f'drone-{random.randint(0, 100)}'
 currentOrderID = '0'
 # Dock address
-baseLatitude = 63.4335
-baseLongitude = 10.4
+baseLatitude = 6343350
+baseLongitude = 1040000
 
 class MQTT_Drone:
     def __init__(self):
@@ -78,7 +78,7 @@ class Drone:
 
     def send_status(self):
         # TODO: pass status data from sensors
-        
+
         status = mess.Status()
         status.Date = 1234567
         status.Battery_level = self.droneHW.battery
@@ -86,8 +86,10 @@ class Drone:
         status.Longitude = self.droneHW.position[1]
         status.Speed = 54 # 15 m/s
         print(status)
+        print(str(status.Latitude) + " " + str(type(status.Latitude)) + " " + str(self.goalLatitude )+ " " + str(type(self.goalLatitude)))
         self.mqttclient.publish(f"delivery-system/drone/{DroneID}/status", status.SerializeToString()) # test message
-        if status.Latitude == self.goalLatitude and status.Longitude == self.goalLongitude:
+        if str(status.Latitude) == self.goalLatitude and str(status.Longitude) == self.goalLongitude:
+            print("success")
             confirm = mess.ArrivalConfirmation()
             confirm.DroneID = DroneID
             confirm.OrderID = currentOrderID
@@ -153,6 +155,12 @@ t3 = {
     "source": "return",
     "target": "idle",
     "effect": "on_idle",
+}
+
+t4 = {
+    "trigger": "t",
+    "source": "idle",
+    "target": "idle",
 }
 
 def start_machine():

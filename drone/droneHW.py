@@ -5,7 +5,7 @@ from threading import Thread
 
 class DroneHW:
 	def __init__(self):
-		self.position = [63.4335, 10.4] # simulated GPS
+		self.position = [6343350, 1040000] # simulated GPS
 		self.velocity = [0, 0]
 		self.state = "IDLE"
 		self.battery = 100
@@ -46,14 +46,14 @@ class DroneHW:
 				self.goal = None
 
 	def update_battery(self):
-		if self.state == "DELIVERING" or self.state == "RETURNING":
-			if self.battery > 0:
-				self.battery -= 0.005
-			if self.battery <= 0:
-				self.battery = 0
+		#if self.state == "DELIVERING" or self.state == "RETURNING":
+		if self.battery > 0:
+			self.battery -= 0.005
+		if self.battery <= 0:
+			self.battery = 0
 		
-		if self.state == "IDLE":
-			self.battery += 0.02
+		#if self.state == "IDLE":
+			#self.battery += 0.02
 
 	def get_speed(self):
 		return 1.0
@@ -61,10 +61,10 @@ class DroneHW:
 	def update_position(self):
 		movement = get_joystick()
 
-		step = 0.01 # movement per click
+		step = 1 # movement per click
 
 		for event in movement:
-			if event.action == "pressed":
+			if event.action == "pressed" or event.action == "held":
 				if event.direction == "up":
 					self.position[1] += step
 				elif event.direction == "down":
@@ -76,9 +76,9 @@ class DroneHW:
 	
 
 	def update(self):
-		#if self.state == "DELIVERING" or self.state == "RETURNING":
-		self.update_position()
-		self.check_arrival()
-
-		self.update_battery()
+		while True:
+			self.update_position()
+			self.check_arrival()
+			self.update_battery()
+			time.sleep(0.1)
 
