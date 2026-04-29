@@ -98,8 +98,8 @@ _Note: The database is automatically seeded with sample products (with Lorem Pic
 
 Most endpoints return data modeled by our standardized envelope: `{ "data": <object>, "error": <error_object> }`.
 
-- **Auth**: `POST /users/register`, `POST /users/login`
-- **Users**: `GET /users/me`, `PATCH /users/me`
+- **Auth**: `POST /auth/jwt/register`, `POST /auth/jwt/login`, `POST /auth/jwt/logout`
+  **Users**: `GET /users/me`, `PATCH /users/me`, `GET /users/{id}`, `PATCH /users/{id}`, `DELETE /users/{id}`
 - **Products**: `GET /products` (with `search` and `category` filters), `GET /products/{id}`
 - **Orders**: `POST /orders`, `GET /orders` (with `userId` filters), `GET /orders/active`, `GET /orders/recent`, `GET /orders/{id}`, `GET /orders/{id}/tracking`
 - **Drones**: Internal telemetry REST routes (simulated MQTT ingestion).

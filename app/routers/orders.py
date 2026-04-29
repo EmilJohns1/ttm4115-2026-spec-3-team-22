@@ -35,6 +35,18 @@ def _map_to_order_schema(db_order: models.Order) -> schemas.Order:
         drone_id=db_order.drone_id
     )
 
+def _map_to_order_summary(db_order: models.Order) -> schemas.OrderSummary:
+    addr = f"{db_order.street_address or ''}, {db_order.city or ''}".strip(", ")
+    return schemas.OrderSummary(
+        id=db_order.id,
+        productName=db_order.product_name or "Unknown Product",
+        status=db_order.status,
+        deliveryAddressSummary=addr,
+        placedAt=db_order.created_at,
+        total=db_order.total or 0.0,
+        currency=db_order.currency or "NOK"
+    )
+
 @router.post("/", response_model=schemas.OrderEnvelope)
 def create_order(
     order: schemas.OrderCreate,
@@ -117,8 +129,8 @@ def read_orders(
             query = query.filter(models.Order.status == status)
             
     db_orders = query.all()
-    # The API spec has a specialized summary object, but we'll return full objects per the list
-    orders = [_map_to_order_schema(o) for o in db_orders]
+    # Ensure items returned in GET /orders conform exactly to summary schema
+    orders = [_map_to_order_summary(o) for o in db_orders]
     return schemas.OrderListEnvelope(data={"items": orders})
 
 @router.get("/active", response_model=schemas.OrderListEnvelope)
@@ -127,7 +139,7 @@ def read_active_orders(userId: str, db: Session = Depends(deps.get_db)):
         models.Order.user_id == userId,
         models.Order.status.in_(["confirmed", "dispatched", "in_transit"])
     ).all()
-    return schemas.OrderListEnvelope(data={"items": [_map_to_order_schema(o) for o in db_orders]})
+    return schemas.OrderListEnvelope(data={"items": [_map_to_order_summary(o) for o in db_orders]})
 
 @router.get("/recent", response_model=schemas.OrderListEnvelope)
 def read_recent_orders(userId: str, limit: int = 3, db: Session = Depends(deps.get_db)):
@@ -135,7 +147,7 @@ def read_recent_orders(userId: str, limit: int = 3, db: Session = Depends(deps.g
         models.Order.user_id == userId,
         models.Order.status == "delivered"
     ).order_by(models.Order.updated_at.desc()).limit(limit).all()
-    return schemas.OrderListEnvelope(data={"items": [_map_to_order_schema(o) for o in db_orders]})
+    return schemas.OrderListEnvelope(data={"items": [_map_to_order_summary(o) for o in db_orders]})
 
 @router.get("/{order_id}", response_model=schemas.OrderEnvelope)
 def read_order(order_id: str, db: Session = Depends(deps.get_db)):
