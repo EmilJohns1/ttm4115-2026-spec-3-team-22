@@ -54,17 +54,18 @@ class MQTTService:
                     db.add(drone)
                 
                 drone.battery = status_msg.Battery_level
-
                 drone.gps_lat = status_msg.Latitude / self.SCALE
                 drone.gps_lon = status_msg.Longitude / self.SCALE
                 drone.speed = status_msg.Speed
-                
+                                
                 drone.last_updated = datetime.now(UTC)
                 db.commit()
 
             elif topic.endswith("/confirmation"):
                 drone_id = topic.split("/")[2]
                 confirmation_msg = messages_pb2.ArrivalConfirmation()
+                confirmation_msg.ParseFromString(payload)
+
                 order_id = str(confirmation_msg.OrderID)
 
                 logger.info(f"Received delivery confirmation from drone {drone_id} for order {order_id}")
@@ -107,7 +108,7 @@ class MQTTService:
                       drone = models.DroneStatus(
                           drone_id=drone_id,
                           current_order_id=order_id,
-                          battery=None
+                          battery=0.0,
                       )
                       db.add(drone)
 
