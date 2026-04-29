@@ -39,17 +39,6 @@ class OrderEnvelope(BaseModel):
     data: Optional[Order] = None
     error: Optional[dict] = None
 
-class OrderSummary(BaseModel):
-    id: str
-    productName: str
-    status: str
-    deliveryAddressSummary: str
-    placedAt: datetime
-    total: float
-    currency: str
-
-    model_config = {"from_attributes": True}
-
 class OrderListEnvelope(BaseModel):
-    data: Optional[Dict[str, List[OrderSummary]]] = None
+    data: Optional[Dict[str, List[Order]]] = None
     error: Optional[dict] = None
