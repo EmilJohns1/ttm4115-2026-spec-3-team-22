@@ -7,8 +7,10 @@ from fastapi import Depends, Request
 from .db.models import User
 from .db.base import AsyncSessionLocal
 from sqlalchemy.ext.asyncio import AsyncSession
+import os
 
-SECRET = "SECRET_KEY_PLACEHOLDER"
+
+SECRET = os.getenv("SECRET_KEY", "SUPERSECRETKEY")
 
 bearer_transport = BearerTransport(tokenUrl="auth/jwt/login")
 
