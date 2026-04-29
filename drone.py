@@ -32,7 +32,7 @@ class MQTT_Drone:
             report.ParseFromString(msg.payload)
             global currentOrderID
             currentOrderID = report.OrderID
-            self.stm_driver.send("task_assignment", "drone", args=[str(report.Latitude), str(report.Longitude)])
+            self.stm_driver.send("task_assignment", "drone", args=[report.Latitude, report.Longitude])
         # elif message == "confirmation":
         #     self.stm_driver.send("arrival_confirmation", "drone")
         # self.count = self.count + 1
@@ -74,6 +74,7 @@ class Drone:
         self.goalLatitude = Latitude
         self.goalLongitude = Longitude
         self.droneHW.set_state("flight")
+        self.droneHW.set_goal(self.goalLatitude, self.goalLongitude)
         print(self.goalLatitude)
         print(self.goalLongitude)
         return 'flight'
@@ -90,14 +91,15 @@ class Drone:
         print(status)
         #print(str(status.Latitude) + " " + str(type(status.Latitude)) + " " + str(self.goalLatitude )+ " " + str(type(self.goalLatitude)))
         self.mqttclient.publish(f"delivery-system/drone/{DroneID}/status", status.SerializeToString()) # test message
-        if str(status.Latitude) == self.goalLatitude and str(status.Longitude) == self.goalLongitude:
+        if status.Latitude == self.goalLatitude and status.Longitude == self.goalLongitude:
             print("success")
             confirm = mess.ArrivalConfirmation()
             confirm.DroneID = DroneID
             confirm.OrderID = currentOrderID
             self.goalLatitude = baseLatitude
             self.goalLongitude = baseLongitude
-            self.mqttclient.publish(f"delivery-system/drone/{DroneID}/confirmation", status.SerializeToString())
+            self.droneHW.set_goal(self.goalLatitude, self.goalLongitude)
+            self.mqttclient.publish(f"delivery-system/drone/{DroneID}/confirmation", confirm.SerializeToString())
             self.stm_driver.send("landing", "drone")
 
     def send_status_on_return(self):
