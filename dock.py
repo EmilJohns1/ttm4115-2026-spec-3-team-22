@@ -57,7 +57,14 @@ class MQTT_Dock:
         elif message == "readiness":
             payloadHello = mess.DroneHello()
             payloadHello.ParseFromString(msg.payload)
-            fleet.append({"droneID": payloadHello.DroneID, "battery": payloadHello.Battery})
+            exists = any(d.get("droneID") == payloadHello.DroneID for d in fleet)
+            if exists:
+                for d in fleet:
+                    if d["droneID"] == payloadHello.DroneID:
+                        d["battery"] = payloadHello.Battery
+                    # d.update((k, payloadHello.Battery) for v, k in d.items() if v == payloadHello.DroneID)
+            else:
+                fleet.append({"droneID": payloadHello.DroneID, "battery": payloadHello.Battery})
             print("fleet:"+str(fleet))
             if assignments:
                 self.stm_driver.send("assignment_request", "dock")
