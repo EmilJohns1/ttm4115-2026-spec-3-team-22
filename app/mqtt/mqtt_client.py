@@ -20,6 +20,7 @@ class MQTTService:
         self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id="ttm4115_backend")
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
+        self.SCALE = 100_000  # Scale factor for GPS coordinates
 
     def on_connect(self, client, userdata, flags, rc, properties=None):
         if rc == 0:
@@ -53,8 +54,9 @@ class MQTTService:
                     db.add(drone)
                 
                 drone.battery = status_msg.Battery_level
-                drone.gps_lat = status_msg.Latitude
-                drone.gps_lon = status_msg.Longitude
+
+                drone.gps_lat = status_msg.Latitude / self.SCALE
+                drone.gps_lon = status_msg.Longitude / self.SCALE
                 drone.speed = status_msg.Speed
                 
                 drone.last_updated = datetime.now(UTC)
@@ -62,8 +64,7 @@ class MQTTService:
 
             elif topic.endswith("/confirmation"):
                 drone_id = topic.split("/")[2]
-                confirmation_msg = messages_pb2.Confirmation()
-                confirmation_msg.ParseFromString(payload)
+                confirmation_msg = messages_pb2.ArrivalConfirmation()
                 order_id = str(confirmation_msg.OrderID)
 
                 logger.info(f"Received delivery confirmation from drone {drone_id} for order {order_id}")
@@ -167,6 +168,10 @@ class MQTTService:
             return
 
         req = messages_pb2.AssignmentRequest()
+
+        lat = int(lat * self.SCALE)
+        lon = int(lon * self.SCALE)
+
         req.Latitude = lat
         req.Longitude = lon
         req.OrderID = order_id if order_id else ""
