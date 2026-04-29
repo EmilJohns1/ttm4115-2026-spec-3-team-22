@@ -5,7 +5,7 @@ import messages_pb2 as mess
 from stmpy import Machine, Driver
 from drone.droneHW import DroneHW
 
-broker = "10.132.63.190"
+broker = "10.94.214.190"
 port = 1883
 batteryLevel = 100 # upon start drone fully charged
 DroneID = f'drone-{random.randint(0, 100)}'
@@ -66,12 +66,14 @@ class Drone:
         # self.batteryLevel = 100
         payload = mess.DroneHello()
         payload.DroneID = DroneID
-        payload.Battery = batteryLevel
+        payload.Battery = self.droneHW.battery
+        self.droneHW.set_state("idle")
         self.mqttclient.publish(f"delivery-system/drone/{DroneID}/readiness", payload.SerializeToString())
 
     def update_goal(self, Latitude, Longitude):
         self.goalLatitude = Latitude
         self.goalLongitude = Longitude
+        self.droneHW.set_state("flight")
         print(self.goalLatitude)
         print(self.goalLongitude)
         return 'flight'
@@ -86,7 +88,7 @@ class Drone:
         status.Longitude = self.droneHW.position[1]
         status.Speed = 54 # 15 m/s
         print(status)
-        print(str(status.Latitude) + " " + str(type(status.Latitude)) + " " + str(self.goalLatitude )+ " " + str(type(self.goalLatitude)))
+        #print(str(status.Latitude) + " " + str(type(status.Latitude)) + " " + str(self.goalLatitude )+ " " + str(type(self.goalLatitude)))
         self.mqttclient.publish(f"delivery-system/drone/{DroneID}/status", status.SerializeToString()) # test message
         if str(status.Latitude) == self.goalLatitude and str(status.Longitude) == self.goalLongitude:
             print("success")
@@ -164,6 +166,7 @@ t4 = {
 }
 
 def start_machine():
+    droneHW = DroneHW()
     drone = Drone()
     drone_machine = Machine(transitions=[t0, t1, t1_update, t2, t2_update, t3], states=[flight], obj=drone, name="drone")
     drone.stm = drone_machine
@@ -176,8 +179,9 @@ def start_machine():
     myclient.stm_driver = driver
     drone.stm_driver = driver
 
-    droneHW = DroneHW()
     drone.droneHW = droneHW
+    droneHW.mqttclient = myclient.client
+    droneHW.DroneID = DroneID
 
     # driver.start(keep_active=True)    # started in MQTT_Drone._on_connect() to prevent race condition
     myclient.start(broker, port)
