@@ -1,13 +1,11 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
 from sqlalchemy.sql import func
+from fastapi_users.db import SQLAlchemyBaseUserTableUUID
 from .base import Base
 
-class User(Base):
+class User(SQLAlchemyBaseUserTableUUID, Base):
     __tablename__ = "users"
-    id = Column(String, primary_key=True, index=True)
     name = Column(String)
-    email = Column(String, unique=True, index=True)
-    password_hash = Column(String)
     street_address = Column(String, nullable=True)
     city = Column(String, nullable=True)
     zip_code = Column(String, nullable=True)

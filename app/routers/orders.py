@@ -11,7 +11,7 @@ router = APIRouter(prefix="/orders", tags=["orders"])
 def _map_to_order_schema(db_order: models.Order) -> schemas.Order:
     return schemas.Order(
         id=db_order.id,
-        userId=db_order.user_id,
+        userId=str(db_order.user_id),
         productId=db_order.product_id,
         productName=db_order.product_name or "Unknown Product",
         status=db_order.status,

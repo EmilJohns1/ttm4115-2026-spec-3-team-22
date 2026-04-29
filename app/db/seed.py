@@ -54,15 +54,21 @@ def seed_db(db: Session):
     db.add_all(sample_products)
     
     # 2. Seed Users
-    from app.routers.users import _hash_password
+    from fastapi_users.password import PasswordHelper
+    pwd_helper = PasswordHelper()
+    
+    sample_user_id = uuid.uuid4()
     sample_user = models.User(
-        id=f"usr_{uuid.uuid4().hex[:8]}",
+        id=sample_user_id,
         name="Alice Example",
         email="alice@example.com",
-        password_hash=_hash_password("password123"),
+        hashed_password=pwd_helper.hash("password123"),
         street_address="Olav Tryggvasons gate 1",
         city="Trondheim",
-        zip_code="7011"
+        zip_code="7011",
+        is_active=True,
+        is_superuser=False,
+        is_verified=False
     )
     db.add(sample_user)
 
@@ -92,7 +98,7 @@ def seed_db(db: Session):
     orders = [
         models.Order(
             id=f"ord_{uuid.uuid4().hex[:8]}",
-            user_id=sample_user.id,
+            user_id=str(sample_user.id),
             product_id=sample_products[0].id,
             product_name=sample_products[0].name,
             status="pending",
@@ -109,7 +115,7 @@ def seed_db(db: Session):
         ),
         models.Order(
             id=f"ord_{uuid.uuid4().hex[:8]}",
-            user_id=sample_user.id,
+            user_id=str(sample_user.id),
             product_id=sample_products[1].id,
             product_name=sample_products[1].name,
             status="dispatched",
@@ -128,7 +134,7 @@ def seed_db(db: Session):
         ),
         models.Order(
             id=f"ord_{uuid.uuid4().hex[:8]}",
-            user_id=sample_user.id,
+            user_id=str(sample_user.id),
             product_id=sample_products[2].id,
             product_name=sample_products[2].name,
             status="completed",

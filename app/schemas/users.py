@@ -1,33 +1,31 @@
+import uuid
 from pydantic import BaseModel, EmailStr
 from typing import Optional
+from fastapi_users import schemas
 
 class Address(BaseModel):
     streetAddress: str
     city: str
     zipCode: str
 
-class UserBase(BaseModel):
+class UserRead(schemas.BaseUser[uuid.UUID]):
     name: str
-    email: EmailStr
-    deliveryAddress: Optional[Address] = None
+    street_address: Optional[str] = None
+    city: Optional[str] = None
+    zip_code: Optional[str] = None
 
-class UserCreate(UserBase):
-    password: str
+class UserCreate(schemas.BaseUserCreate):
+    name: str
+    street_address: Optional[str] = None
+    city: Optional[str] = None
+    zip_code: Optional[str] = None
 
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
-
-class UserUpdate(BaseModel):
+class UserUpdate(schemas.BaseUserUpdate):
     name: Optional[str] = None
-    email: Optional[EmailStr] = None
-    deliveryAddress: Optional[Address] = None
-
-class User(UserBase):
-    id: str
-
-    model_config = {"from_attributes": True}
+    street_address: Optional[str] = None
+    city: Optional[str] = None
+    zip_code: Optional[str] = None
 
 class UserEnvelope(BaseModel):
-    data: Optional[User] = None
+    data: Optional[UserRead] = None
     error: Optional[dict] = None

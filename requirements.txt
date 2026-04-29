@@ -9,3 +9,5 @@ protobuf
 passlib[argon2]
 geopy
 python-dotenv
+fastapi-users[sqlalchemy]
+aiosqlite
