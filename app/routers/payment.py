@@ -1,0 +1,78 @@
+import os
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+import stripe
+
+from app.auth import current_active_user
+from app.db import deps, models
+from app.schemas.payment import PaymentIntentCreate, PaymentIntentData, PaymentIntentEnvelope
+
+router = APIRouter(prefix="/payments", tags=["payments"])
+
+
+def _to_minor_units(amount: float) -> int:
+    return int(round(amount * 100))
+
+
+@router.post("/intent", response_model=PaymentIntentEnvelope)
+def create_payment_intent(
+    payload: PaymentIntentCreate,
+    db: Session = Depends(deps.get_db),
+    user: models.User = Depends(current_active_user),
+):
+    stripe_secret = os.getenv("STRIPE_SECRET_KEY")
+    if not stripe_secret:
+        raise HTTPException(status_code=500, detail="Stripe is not configured")
+
+    stripe.api_key = stripe_secret
+
+    order = db.query(models.Order).filter(models.Order.id == payload.orderId).first()
+    if not order:
+        return PaymentIntentEnvelope(error={"code": "NOT_FOUND", "message": "Order not found"})
+
+    if order.user_id != str(user.id):
+        raise HTTPException(status_code=403, detail="Order does not belong to user")
+
+    db_user = db.query(models.User).filter(models.User.id == user.id).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not db_user.stripe_customer_id:
+        try:
+            customer = stripe.Customer.create(
+                email=db_user.email,
+                name=db_user.name,
+                metadata={"user_id": str(db_user.id)},
+            )
+        except stripe.error.StripeError as exc:
+            raise HTTPException(status_code=502, detail=f"Stripe error: {exc.user_message or str(exc)}") from exc
+
+        db_user.stripe_customer_id = customer.id
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+
+    amount_minor = _to_minor_units(order.total or 0.0)
+    if amount_minor <= 0:
+        return PaymentIntentEnvelope(error={"code": "INVALID_AMOUNT", "message": "Order total is invalid"})
+
+    try:
+        intent = stripe.PaymentIntent.create(
+            amount=amount_minor,
+            currency=(order.currency or "NOK").lower(),
+            customer=db_user.stripe_customer_id,
+            metadata={"order_id": order.id, "user_id": str(db_user.id)},
+            automatic_payment_methods={"enabled": True},
+        )
+    except stripe.error.StripeError as exc:
+        raise HTTPException(status_code=502, detail=f"Stripe error: {exc.user_message or str(exc)}") from exc
+
+    return PaymentIntentEnvelope(
+        data=PaymentIntentData(
+            paymentIntentId=intent.id,
+            clientSecret=intent.client_secret,
+            customerId=db_user.stripe_customer_id,
+            publishableKey=os.getenv("STRIPE_PUBLISHABLE_KEY"),
+        )
+    )
+

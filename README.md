@@ -37,10 +37,10 @@ A sample **FastAPI** backend project for TTM4115.
 ├── api-spec-trimmed.md  # Detailed API specifications mapping
 ├── tests/
 │   ├── conftest.py      # Test overrides and database fixtures
-│   ├── test_users.py    
-│   ├── test_products.py 
-│   ├── test_orders.py   
-│   └── test_drones.py   
+│   ├── test_users.py
+│   ├── test_products.py
+│   ├── test_orders.py
+│   └── test_drones.py
 ├── requirements.txt
 ├── Dockerfile           # Docker image setup
 ├── docker-compose.yml   # Docker Compose configuration
@@ -88,8 +88,11 @@ pip install -r requirements.txt
 
 ```bash
 uvicorn app.main:app --reload
+or
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
-*Note: The database is automatically seeded with sample products (with Lorem Picsum images) when the server starts!*
+
+_Note: The database is automatically seeded with sample products (with Lorem Picsum images) when the server starts!_
 
 ## API Endpoints (Core overview)
 

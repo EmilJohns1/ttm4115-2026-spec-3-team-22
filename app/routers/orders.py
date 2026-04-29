@@ -3,6 +3,7 @@ from datetime import UTC
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.db import deps, models
+from app.auth import current_active_user
 from app.schemas import orders as schemas
 from typing import List, Optional
 
@@ -35,7 +36,11 @@ def _map_to_order_schema(db_order: models.Order) -> schemas.Order:
     )
 
 @router.post("/", response_model=schemas.OrderEnvelope)
-def create_order(order: schemas.OrderCreate, db: Session = Depends(deps.get_db)):
+def create_order(
+    order: schemas.OrderCreate,
+    db: Session = Depends(deps.get_db),
+    user: models.User = Depends(current_active_user),
+):
     import uuid
     from datetime import datetime
     try:
@@ -72,7 +77,7 @@ def create_order(order: schemas.OrderCreate, db: Session = Depends(deps.get_db))
 
     new_order = models.Order(
         id=new_id,
-        user_id=order.userId,
+        user_id=str(user.id),
         product_id=order.productId,
         product_name=product.name,
         status="confirmed",

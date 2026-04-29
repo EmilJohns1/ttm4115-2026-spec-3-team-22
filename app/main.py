@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from app.routers import orders, drones, products
+from app.routers import orders, drones, products, payment
 from app.auth import fastapi_users, auth_backend
 from app.schemas.users import UserRead, UserCreate, UserUpdate
 from app.db.base import Base, engine, SessionLocal
@@ -57,6 +57,7 @@ app.include_router(fastapi_users.get_users_router(UserRead, UserUpdate), prefix=
 app.include_router(orders.router)
 app.include_router(products.router)
 app.include_router(drones.router)
+app.include_router(payment.router)
 
 
 @app.get("/", tags=["root"])

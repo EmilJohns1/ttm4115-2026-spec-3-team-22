@@ -14,7 +14,6 @@ class Amount(BaseModel):
     currency: str
 
 class OrderBase(BaseModel):
-    userId: str
     productId: str
     deliveryAddress: Address
 
@@ -22,6 +21,7 @@ class OrderCreate(OrderBase):
     pass
 
 class Order(OrderBase):
+    userId: str
     id: str
     productName: str
     status: str
