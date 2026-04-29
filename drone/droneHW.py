@@ -194,7 +194,7 @@ class DroneHW:
 
 				# BATTERY (right side)
 				if x in [6, 7]:
-					if y >= 8 - battery_height:
+					if y < battery_height:
 						pixels.append(green)
 					else:
 						pixels.append(off)
