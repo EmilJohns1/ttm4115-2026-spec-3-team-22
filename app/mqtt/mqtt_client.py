@@ -80,6 +80,9 @@ class MQTTService:
                         drone.current_order_id = None  # Clear current order from drone status
                     db.commit()
                     logger.info(f"Order {order_id} marked as delivered in DB.")
+                    
+                    # When a drone is finished delivering, we check for waiting orders and assign them a drone
+                    self.assign_next_pending_order(db)
                 else:
                     logger.error(f"Order {order_id} not found in DB to mark as delivered.")
 
@@ -130,7 +133,7 @@ class MQTTService:
                 try:
                     order = db.query(models.Order).filter_by(id=failure_order_id).first()
                     if order:
-                        order.status = "pending"
+                        order.status = "confirmed"  # revert back to confirmed so it can be reassigned
                         db.commit()
                         logger.info(f"Order {failure_order_id} marked as drone assignment failed.")
                     else:
@@ -162,6 +165,28 @@ class MQTTService:
         
     def publish(self, topic, payload_bytes):
         self.client.publish(topic, payload_bytes)
+
+    def assign_next_pending_order(self, db):
+        # find oldest pending order
+        order = (
+            db.query(models.Order)
+            .filter(
+                models.Order.status == "confirmed",
+                models.Order.drone_id.is_(None),
+            )
+            .order_by(models.Order.created_at.asc())
+            .first()
+        )
+
+        if not order:
+            return  # no waiting orders
+
+        # Request drone assignment via MQTT, letting the dock handle the actual assignment 
+        self.request_drone_assignment(
+            lat=order.destination_lat or 63.435,
+            lon=order.destination_lon or 10.4003,
+            order_id=order.id,
+        )
 
     def request_drone_assignment(self, lat: float, lon: float, order_id: str = None):
         if not messages_pb2:
