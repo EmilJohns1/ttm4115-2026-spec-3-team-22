@@ -9,6 +9,7 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     street_address = Column(String, nullable=True)
     city = Column(String, nullable=True)
     zip_code = Column(String, nullable=True)
+    stripe_customer_id = Column(String, nullable=True)
 
 class Product(Base):
     __tablename__ = "products"
@@ -27,6 +28,7 @@ class Order(Base):
     user_id = Column(String, index=True)
     product_id = Column(String)
     product_name = Column(String)
+    payment_intent_id = Column(String, nullable=True, index=True)
     status = Column(String, default="pending")
     street_address = Column(String)
     city = Column(String)

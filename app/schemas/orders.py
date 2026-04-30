@@ -14,7 +14,6 @@ class Amount(BaseModel):
     currency: str
 
 class OrderBase(BaseModel):
-    userId: str
     productId: str
     deliveryAddress: Address
 
@@ -22,6 +21,7 @@ class OrderCreate(OrderBase):
     pass
 
 class Order(OrderBase):
+    userId: str
     id: str
     productName: str
     status: str
@@ -35,10 +35,5 @@ class Order(OrderBase):
 
     model_config = {"from_attributes": True}
 
-class OrderEnvelope(BaseModel):
-    data: Optional[Order] = None
-    error: Optional[dict] = None
-
-class OrderListEnvelope(BaseModel):
-    data: Optional[Dict[str, List[Order]]] = None
-    error: Optional[dict] = None
+class OrderList(BaseModel):
+    items: List[Order]

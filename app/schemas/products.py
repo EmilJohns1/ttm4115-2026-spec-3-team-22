@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import List
 
 class ProductBase(BaseModel):
     name: str
@@ -18,10 +18,5 @@ class Product(ProductBase):
 
     model_config = {"from_attributes": True}
 
-class ProductEnvelope(BaseModel):
-    data: Optional[Product] = None
-    error: Optional[dict] = None
-
-class ProductListEnvelope(BaseModel):
-    data: Optional[dict] = None  # Expected shape {"items": [Product, ...]}
-    error: Optional[dict] = None
+class ProductList(BaseModel):
+    items: List[Product]

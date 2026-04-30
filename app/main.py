@@ -6,7 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from app.routers import orders, drones, products
+from app.routers import orders, drones, products, payment
+from app.routers.auth import router as auth_refresh_router
 from app.auth import fastapi_users, auth_backend
 from app.schemas.users import UserRead, UserCreate, UserUpdate
 from app.db.base import Base, engine, SessionLocal
@@ -52,11 +53,13 @@ app.add_middleware(
 )
 
 app.include_router(fastapi_users.get_auth_router(auth_backend), prefix="/auth/jwt", tags=["auth"])
+app.include_router(auth_refresh_router)
 app.include_router(fastapi_users.get_register_router(UserRead, UserCreate), prefix="/auth", tags=["auth"])
 app.include_router(fastapi_users.get_users_router(UserRead, UserUpdate), prefix="/users", tags=["users"])
 app.include_router(orders.router)
 app.include_router(products.router)
 app.include_router(drones.router)
+app.include_router(payment.router)
 
 
 @app.get("/", tags=["root"])
