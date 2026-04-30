@@ -26,6 +26,3 @@ class UserUpdate(schemas.BaseUserUpdate):
     city: Optional[str] = None
     zip_code: Optional[str] = None
 
-class UserEnvelope(BaseModel):
-    data: Optional[UserRead] = None
-    error: Optional[dict] = None

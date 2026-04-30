@@ -1,11 +1,11 @@
 from datetime import UTC
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db import deps, models
 from app.auth import current_active_user
 from app.schemas import orders as schemas
-from typing import List, Optional
+from typing import Optional
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 
@@ -35,7 +35,7 @@ def _map_to_order_schema(db_order: models.Order) -> schemas.Order:
         drone_id=db_order.drone_id
     )
 
-@router.post("/", response_model=schemas.OrderEnvelope)
+@router.post("/", response_model=schemas.Order)
 def create_order(
     order: schemas.OrderCreate,
     db: Session = Depends(deps.get_db),
@@ -43,15 +43,14 @@ def create_order(
 ):
     import uuid
     from datetime import datetime
-    # Fetch the actual product from the database
     product = db.query(models.Product).filter(models.Product.id == order.productId).first()
     if not product:
-        return schemas.OrderEnvelope(error={"code": "NOT_FOUND", "message": "Product not found"})
+        raise HTTPException(status_code=404, detail="Product not found")
 
     from geopy.geocoders import Nominatim
     geolocator = Nominatim(user_agent="ttm4115_student_project")
     address_str = f"{order.deliveryAddress.streetAddress}, {order.deliveryAddress.zipCode} {order.deliveryAddress.city}, Norway"
-    
+
     try:
         location = geolocator.geocode(address_str, timeout=3)
         print(f"Geocoding result for '{address_str}': {location}")
@@ -65,7 +64,7 @@ def create_order(
         dest_lat, dest_lon = 63.435, 10.4003
 
     new_id = f"{uuid.uuid4().hex[:8]}"
-    
+
     delivery_fee = 2.99 # Flat fee for simplicity, could be dynamic based on distance or other factors
     subtotal = product.price or 0.0
     total_amount = subtotal + delivery_fee
@@ -92,57 +91,52 @@ def create_order(
     db.commit()
     db.refresh(new_order)
 
-    return schemas.OrderEnvelope(data=_map_to_order_schema(new_order))
+    return _map_to_order_schema(new_order)
 
-@router.get("/", response_model=schemas.OrderListEnvelope)
+@router.get("/", response_model=schemas.OrderList)
 def read_orders(
-    userId: str, 
     status: Optional[str] = None,
-    db: Session = Depends(deps.get_db)
+    limit: Optional[int] = None,
+    db: Session = Depends(deps.get_db),
+    user: models.User = Depends(current_active_user),
 ):
-    query = db.query(models.Order).filter(models.Order.user_id == userId)
+    query = db.query(models.Order).filter(models.Order.user_id == str(user.id))
     if status:
         if status == "active":
-            query = query.filter(models.Order.status.in_(["confirmed", "dispatched", "in_transit"]))
+            query = query.filter(models.Order.status.in_(["confirmed", "dispatched"]))
         else:
             query = query.filter(models.Order.status == status)
-            
-    db_orders = query.all()
-    # Ensure items returned in GET /orders conform exactly to summary schema
-    orders = [_map_to_order_schema(o) for o in db_orders]
-    return schemas.OrderListEnvelope(data={"items": orders})
+    query = query.order_by(models.Order.updated_at.desc())
+    if limit:
+        query = query.limit(limit)
+    return schemas.OrderList(items=[_map_to_order_schema(o) for o in query.all()])
 
-@router.get("/active", response_model=schemas.OrderListEnvelope)
-def read_active_orders(userId: str, db: Session = Depends(deps.get_db)):
-    db_orders = db.query(models.Order).filter(
-        models.Order.user_id == userId,
-        models.Order.status.in_(["confirmed", "dispatched", "in_transit"])
-    ).all()
-    return schemas.OrderListEnvelope(data={"items": [_map_to_order_schema(o) for o in db_orders]})
-
-@router.get("/recent", response_model=schemas.OrderListEnvelope)
-def read_recent_orders(userId: str, limit: int = 3, db: Session = Depends(deps.get_db)):
-    db_orders = db.query(models.Order).filter(
-        models.Order.user_id == userId,
-        models.Order.status == "delivered"
-    ).order_by(models.Order.updated_at.desc()).limit(limit).all()
-    return schemas.OrderListEnvelope(data={"items": [_map_to_order_schema(o) for o in db_orders]})
-
-@router.get("/{order_id}", response_model=schemas.OrderEnvelope)
-def read_order(order_id: str, db: Session = Depends(deps.get_db)):
+@router.get("/{order_id}", response_model=schemas.Order)
+def read_order(
+    order_id: str,
+    db: Session = Depends(deps.get_db),
+    user: models.User = Depends(current_active_user),
+):
     order = db.query(models.Order).filter(models.Order.id == order_id).first()
     if not order:
-        return schemas.OrderEnvelope(error={"code": "NOT_FOUND", "message": "Order not found"})
-    return schemas.OrderEnvelope(data=_map_to_order_schema(order))
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order.user_id != str(user.id):
+        raise HTTPException(status_code=403, detail="Access denied")
+    return _map_to_order_schema(order)
 
 @router.get("/{order_id}/tracking")
-def get_order_tracking(order_id: str, db: Session = Depends(deps.get_db)):
+def get_order_tracking(
+    order_id: str,
+    db: Session = Depends(deps.get_db),
+    user: models.User = Depends(current_active_user),
+):
     order = db.query(models.Order).filter(models.Order.id == order_id).first()
     if not order:
-        return {"data": None, "error": {"code": "NOT_FOUND", "message": "Order not found"}}
-    
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order.user_id != str(user.id):
+        raise HTTPException(status_code=403, detail="Access denied")
+
     drone_info = None
-    # We query the drone status database table which is fed by our MQTT subscriber
     drone = db.query(models.DroneStatus).filter(models.DroneStatus.current_order_id == order.id).first()
     if drone:
         drone_info = {
@@ -152,24 +146,20 @@ def get_order_tracking(order_id: str, db: Session = Depends(deps.get_db)):
         }
 
     status_label_map = {
-        "pending": "Waiting for drone",
-        "confirmed": "Confirmed",
-        "dispatched": "Dispatched",
-        "in_transit": "On its way",
+        "pending": "Payment processed",
+        "confirmed": "Order confirmed",
+        "dispatched": "Drone dispatched",
         "delivered": "Delivered",
         "cancelled": "Cancelled"
     }
 
     return {
-        "data": {
-            "orderId": order.id,
-            "status": order.status,
-            "statusLabel": status_label_map.get(order.status, order.status),
-            "drone": drone_info,
-            "destination": {
-                "latitude": order.destination_lat or 63.435,
-                "longitude": order.destination_lon or 10.4003
-            }
-        },
-        "error": None
+        "orderId": order.id,
+        "status": order.status,
+        "statusLabel": status_label_map.get(order.status, order.status),
+        "drone": drone_info,
+        "destination": {
+            "latitude": order.destination_lat or 63.435,
+            "longitude": order.destination_lon or 10.4003
+        }
     }

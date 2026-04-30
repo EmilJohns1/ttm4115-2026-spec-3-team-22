@@ -13,6 +13,3 @@ class PaymentIntentData(BaseModel):
     publishableKey: Optional[str] = None
 
 
-class PaymentIntentEnvelope(BaseModel):
-    data: Optional[PaymentIntentData] = None
-    error: Optional[dict] = None

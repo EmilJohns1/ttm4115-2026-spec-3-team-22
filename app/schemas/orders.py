@@ -35,10 +35,5 @@ class Order(OrderBase):
 
     model_config = {"from_attributes": True}
 
-class OrderEnvelope(BaseModel):
-    data: Optional[Order] = None
-    error: Optional[dict] = None
-
-class OrderListEnvelope(BaseModel):
-    data: Optional[Dict[str, List[Order]]] = None
-    error: Optional[dict] = None
+class OrderList(BaseModel):
+    items: List[Order]

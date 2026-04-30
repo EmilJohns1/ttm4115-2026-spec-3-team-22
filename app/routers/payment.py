@@ -11,7 +11,6 @@ from app.db import deps, models
 from app.schemas.payment import (
     PaymentIntentCreate,
     PaymentIntentData,
-    PaymentIntentEnvelope,
 )
 
 router = APIRouter(prefix="/payments", tags=["payments"])
@@ -22,7 +21,7 @@ def _to_minor_units(amount: float) -> int:
     return int(round(amount * 100))
 
 
-@router.post("/intent", response_model=PaymentIntentEnvelope)
+@router.post("/intent", response_model=PaymentIntentData)
 def create_payment_intent(
     payload: PaymentIntentCreate,
     db: Session = Depends(deps.get_db),
@@ -36,7 +35,7 @@ def create_payment_intent(
 
     order = db.query(models.Order).filter(models.Order.id == payload.orderId).first()
     if not order:
-        return PaymentIntentEnvelope(error={"code": "NOT_FOUND", "message": "Order not found"})
+        raise HTTPException(status_code=404, detail="Order not found")
 
     if order.user_id != str(user.id):
         raise HTTPException(status_code=403, detail="Order does not belong to user")
@@ -62,7 +61,7 @@ def create_payment_intent(
 
     amount_minor = _to_minor_units(order.total or 0.0)
     if amount_minor <= 0:
-        return PaymentIntentEnvelope(error={"code": "INVALID_AMOUNT", "message": "Order total is invalid"})
+        raise HTTPException(status_code=422, detail="Order total is invalid")
 
     try:
         intent = stripe.PaymentIntent.create(
@@ -80,13 +79,11 @@ def create_payment_intent(
     db.commit()
     db.refresh(order)
 
-    return PaymentIntentEnvelope(
-        data=PaymentIntentData(
-            paymentIntentId=intent.id,
-            clientSecret=intent.client_secret,
-            customerId=db_user.stripe_customer_id,
-            publishableKey=os.getenv("STRIPE_PUBLISHABLE_KEY"),
-        )
+    return PaymentIntentData(
+        paymentIntentId=intent.id,
+        clientSecret=intent.client_secret,
+        customerId=db_user.stripe_customer_id,
+        publishableKey=os.getenv("STRIPE_PUBLISHABLE_KEY"),
     )
 
 @router.post("/webhook")
