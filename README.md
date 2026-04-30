@@ -9,11 +9,11 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    ```bash
    npm install
    ```
-
+The app utilizes some native modules and must therefor be ran as a development build. A Mac other other device with access to XCode must compile the app in order to launch it on an iOS device. The easiest approach is running it through an Android Simulator. This can be set up by downloading Android Studio.
 2. Start the app
 
    ```bash
-   npx expo start
+   npx expo run:[android|ios]
    ```
 
 In the output, you'll find options to open the app in a
@@ -25,15 +25,6 @@ In the output, you'll find options to open the app in a
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
 ## Learn more
 
