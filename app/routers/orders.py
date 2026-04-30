@@ -43,11 +43,6 @@ def create_order(
 ):
     import uuid
     from datetime import datetime
-    try:
-        from app.mqtt.mqtt_client import mqtt_service
-    except ImportError:
-        from app.mqtt_client import mqtt_service
-
     # Fetch the actual product from the database
     product = db.query(models.Product).filter(models.Product.id == order.productId).first()
     if not product:
@@ -80,7 +75,7 @@ def create_order(
         user_id=str(user.id),
         product_id=order.productId,
         product_name=product.name,
-        status="confirmed",
+        status="pending",
         street_address=order.deliveryAddress.streetAddress,
         city=order.deliveryAddress.city,
         zip_code=order.deliveryAddress.zipCode,
@@ -96,10 +91,6 @@ def create_order(
     db.add(new_order)
     db.commit()
     db.refresh(new_order)
-
-    # After saving order, request a drone to the destination
-    if hasattr(mqtt_service, "request_drone_assignment"):
-        mqtt_service.request_drone_assignment(lat=dest_lat, lon=dest_lon, order_id=new_order.id)
 
     return schemas.OrderEnvelope(data=_map_to_order_schema(new_order))
 

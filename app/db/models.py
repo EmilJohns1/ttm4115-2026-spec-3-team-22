@@ -28,6 +28,7 @@ class Order(Base):
     user_id = Column(String, index=True)
     product_id = Column(String)
     product_name = Column(String)
+    payment_intent_id = Column(String, nullable=True, index=True)
     status = Column(String, default="pending")
     street_address = Column(String)
     city = Column(String)

@@ -1,13 +1,21 @@
+import json
+import logging
 import os
-from fastapi import APIRouter, Depends, HTTPException
+from datetime import UTC, datetime
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 import stripe
 
 from app.auth import current_active_user
 from app.db import deps, models
-from app.schemas.payment import PaymentIntentCreate, PaymentIntentData, PaymentIntentEnvelope
+from app.schemas.payment import (
+    PaymentIntentCreate,
+    PaymentIntentData,
+    PaymentIntentEnvelope,
+)
 
 router = APIRouter(prefix="/payments", tags=["payments"])
+logger = logging.getLogger(__name__)
 
 
 def _to_minor_units(amount: float) -> int:
@@ -61,11 +69,16 @@ def create_payment_intent(
             amount=amount_minor,
             currency=(order.currency or "NOK").lower(),
             customer=db_user.stripe_customer_id,
-            metadata={"order_id": order.id, "user_id": str(db_user.id)},
             automatic_payment_methods={"enabled": True},
         )
     except stripe.error.StripeError as exc:
         raise HTTPException(status_code=502, detail=f"Stripe error: {exc.user_message or str(exc)}") from exc
+
+    order.payment_intent_id = intent.id
+    order.updated_at = datetime.now(UTC)
+    db.add(order)
+    db.commit()
+    db.refresh(order)
 
     return PaymentIntentEnvelope(
         data=PaymentIntentData(
@@ -75,4 +88,58 @@ def create_payment_intent(
             publishableKey=os.getenv("STRIPE_PUBLISHABLE_KEY"),
         )
     )
+
+@router.post("/webhook")
+async def stripe_webhook(request: Request, db: Session = Depends(deps.get_db)):
+    webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
+    
+    payload = await request.body()
+    event = None
+
+    try:
+        event = json.loads(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid payload") from exc
+
+    if webhook_secret:
+        sig_header = request.headers.get("stripe-signature")
+        try:
+            event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+        except stripe.error.SignatureVerificationError as exc:
+            raise HTTPException(status_code=400, detail="Invalid signature") from exc
+
+    logger.info("Stripe webhook received: id=%s type=%s", event["id"], event["type"])
+
+    if event["type"] != "payment_intent.succeeded":
+        return {"received": True}
+
+    intent = event["data"]["object"]
+    intent_id = intent.get("id") if isinstance(intent, dict) else intent.id
+    if not intent_id:
+        return {"received": True}
+
+    order = db.query(models.Order).filter(models.Order.payment_intent_id == intent_id).first()
+    if not order:
+        return {"received": True}
+
+    if order.status != "confirmed":
+        order.status = "confirmed"
+        order.updated_at = datetime.now(UTC)
+        db.add(order)
+        db.commit()
+        db.refresh(order)
+
+        try:
+            from app.mqtt.mqtt_client import mqtt_service
+        except ImportError:
+            from app.mqtt_client import mqtt_service
+
+        if hasattr(mqtt_service, "request_drone_assignment"):
+            mqtt_service.request_drone_assignment(
+                lat=order.destination_lat or 63.435,
+                lon=order.destination_lon or 10.4003,
+                order_id=order.id,
+            )
+
+    return {"received": True}
 
