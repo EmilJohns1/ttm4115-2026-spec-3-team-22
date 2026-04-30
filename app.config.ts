@@ -15,6 +15,7 @@ export default (): ExpoConfig => {
     newArchEnabled: true,
     ios: {
       supportsTablet: true,
+      bundleIdentifier: "com.andgjers.DroneDelivery",
     },
     android: {
       adaptiveIcon: {

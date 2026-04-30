@@ -24,7 +24,7 @@ const LargeCard = ({ title, subtitle, imageUrl, href }: LargeCardProps) => {
 
   return (
     <Link href={href} asChild>
-      <Pressable className="h-52 w-full overflow-hidden rounded-2xl border border-border bg-card">
+      <Pressable className="flex-1 w-full overflow-hidden rounded-2xl border border-border bg-card">
         <View className="h-32 w-full">
           <Image
             source={imageSource}
@@ -33,9 +33,9 @@ const LargeCard = ({ title, subtitle, imageUrl, href }: LargeCardProps) => {
           />
         </View>
 
-        <View className="flex-1 justify-end gap-1 px-2 pb-2 pt-2">
+        <View className="flex-1 gap-1 p-3">
           <Text className="text-lg font-semibold">{title}</Text>
-          <Text className="text-primary">{subtitle}</Text>
+          <Text className="text-primary font-medium">{subtitle}</Text>
         </View>
       </Pressable>
     </Link>

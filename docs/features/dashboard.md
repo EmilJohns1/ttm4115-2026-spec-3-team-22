@@ -65,7 +65,7 @@ The default landing screen of the app. Gives the customer a quick overview of al
 
 ## Constraints & hard rules
 
-- Active orders are those with a status of `confirmed`, `dispatched`, or `in_transit` — never show `delivered` or `cancelled` orders in the active section
+- Active orders are those with a status of `confirmed`, `dispatched`, or `in_transit` — never show `pending`, `delivered`, or `cancelled` orders in the active section
 - Dashboard data must refresh each time the screen comes into focus — use TanStack Query's `refetchOnWindowFocus`
 - Each active order card must link directly to that order's tracking screen
 
@@ -73,4 +73,4 @@ The default landing screen of the app. Gives the customer a quick overview of al
 
 ## Open questions
 
-- [ ] **Active order statuses** — confirm the full set of statuses used by the backend (`confirmed`, `dispatched`, `in_transit`, `delivered`, `cancelled`)
+- [ ] **Active order statuses** — confirm the full set of statuses used by the backend (`pending`, `confirmed`, `dispatched`, `in_transit`, `delivered`, `cancelled`)

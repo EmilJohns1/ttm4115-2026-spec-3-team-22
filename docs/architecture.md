@@ -25,8 +25,7 @@ graph TD
   API --> DB
   API -->|Push notifications| FCM
   FCM --> App
-  API -->|Payment intents| Stripe
-  Stripe -->|Webhook| API
+  API -->|Payment intents/confirm| Stripe
 ```
 
 ---
@@ -51,7 +50,7 @@ Responsible for all drone communication and control. Receives commands from the 
 
 ### Stripe (test mode)
 
-Handles payment processing. The backend creates payment intents and listens for Stripe webhooks to confirm payment before an order is confirmed. No real transactions occur — Stripe test mode card numbers are used throughout.
+Handles payment processing. The backend creates payment intents and confirms payments via Stripe APIs before an order is confirmed. No real transactions occur — Stripe test mode card numbers are used throughout.
 
 ### FCM / APNs
 
@@ -65,11 +64,12 @@ Delivers push notifications to the mobile app for key order events (order confir
 
 1. Customer selects a product and initiates checkout in the app
 2. App calls `POST /orders` on the backend
-3. Backend creates a pending order in the database and creates a Stripe payment intent
-4. App completes payment using the Stripe SDK with the payment intent
-5. Stripe sends a webhook to the backend confirming payment
-6. Backend marks the order as confirmed and dispatches a drone command via MQTT to the IoT gateway
-7. Backend sends an "order confirmed" push notification via FCM/APNs to the customer's device
+3. Backend creates a pending order in the database
+4. App calls `POST /payments/intent` to retrieve the Stripe payment intent data
+5. App completes payment using the Stripe SDK with the payment intent
+6. App calls `POST /payments/confirm` to validate the payment and confirm the order
+7. Backend marks the order as confirmed and dispatches a drone command via MQTT to the IoT gateway
+8. Backend sends an "order confirmed" push notification via FCM/APNs to the customer's device
 
 ### Tracking a delivery
 

@@ -33,8 +33,8 @@ Allows a logged-in customer to place a drone delivery order for a single product
 ### Order confirmation
 
 **Given** a user completes payment,
-**when** Stripe confirms the transaction via webhook,
-**then** the order is created, a confirmation notification is sent, the order appears on the dashboard, and the user is navigated to the order tracking screen.
+**when** the app calls `POST /payments/confirm`,
+**then** the backend confirms the order, a confirmation notification is sent, the order appears on the dashboard, and the user is navigated to the order tracking screen.
 
 ### Payment failure and retry
 
@@ -66,26 +66,28 @@ Allows a logged-in customer to place a drone delivery order for a single product
 
 ### Endpoints used
 
-| Method | Path      | Purpose                                                                  |
-| ------ | --------- | ------------------------------------------------------------------------ |
-| `POST` | `/orders` | Create a pending order and receive a Stripe payment intent client secret |
+| Method | Path                | Purpose                                        |
+| ------ | ------------------- | ---------------------------------------------- |
+| `POST` | `/orders`           | Create a pending order                         |
+| `POST` | `/payments/intent`  | Create or fetch the Stripe payment intent data |
+| `POST` | `/payments/confirm` | Confirm the Stripe payment and order           |
 
 ### Payment flow
 
-1. App calls `POST /orders` — backend creates a pending order and a Stripe payment intent, returns the client secret
-2. App presents the Stripe payment sheet using the client secret (uses saved card if available)
-3. User completes payment in the sheet
-4. Stripe sends a webhook to the backend confirming payment
-5. Backend marks the order as confirmed and dispatches the drone
+1. App calls `POST /orders` — backend creates a pending order and returns the order
+2. App calls `POST /payments/intent` — backend returns the Stripe payment intent details
+3. App presents the Stripe payment sheet using the client secret (uses saved card if available)
+4. User completes payment in the sheet
+5. App calls `POST /payments/confirm` — backend validates the payment and confirms the order
 6. Order appears on the dashboard under active orders
 
-The frontend must not mark an order as confirmed itself — this happens exclusively via the Stripe webhook on the backend.
+The frontend must not mark an order as confirmed itself — this happens via the backend confirmation endpoint.
 
 ---
 
 ## Constraints & hard rules
 
-- Never mark an order as confirmed from the frontend — wait for the backend webhook
+- Never mark an order as confirmed from the frontend — wait for the backend confirmation endpoint
 - Payment must always go through Stripe — do not simulate or skip payment even in demo mode
 - The per-order delivery address must never overwrite the user's saved profile address
 - Delivery address must be validated before the payment sheet is presented

@@ -209,7 +209,7 @@ Open question: Decide whether this should be stored in one single field.
 ### Order status enum
 
 ```text
-pending_payment | confirmed | dispatched | in_transit | delivered | cancelled
+pending | confirmed | dispatched | in_transit | delivered | cancelled
 ```
 
 App behavior groups:
@@ -221,20 +221,20 @@ App behavior groups:
 
 ## Screen To Endpoint Matrix
 
-| Screen/route                    | Endpoint(s) used                                                |
-| ------------------------------- | --------------------------------------------------------------- |
-| `auth/login`                    | `POST /auth/login`, `POST /auth/google`, `POST /auth/refresh`   |
-| `auth/register`                 | `POST /auth/register`, `POST /auth/google`                      |
-| `tabs/index` (dashboard)        | `GET /orders/active`, `GET /orders/recent?limit=3`              |
-| `tabs/browse`                   | `GET /products`                                                 |
-| `products/[productId]`          | `GET /products/:id`                                             |
-| `products/[productId]/checkout` | `POST /orders`                                                  |
-| `tabs/orders`                   | `GET /orders?status=&cursor=&limit=`                            |
-| `orders/[orderId]`              | `GET /orders/:id`, `GET /orders/:id/tracking`                   |
-| `tabs/profile` / edit profile   | `GET /users/me`, `PATCH /users/me`, `PATCH /users/me/password`  |
-| Manage payment method           | `GET /users/me/payment-method`, `POST /users/me/payment-method` |
-| Notification lifecycle          | `POST /users/me/push-token`, `DELETE /users/me/push-token`      |
-| Logout                          | `DELETE /users/me/push-token`, `POST /auth/logout`              |
+| Screen/route                    | Endpoint(s) used                                                  |
+| ------------------------------- | ----------------------------------------------------------------- |
+| `auth/login`                    | `POST /auth/login`, `POST /auth/google`, `POST /auth/refresh`     |
+| `auth/register`                 | `POST /auth/register`, `POST /auth/google`                        |
+| `tabs/index` (dashboard)        | `GET /orders/active`, `GET /orders/recent?limit=3`                |
+| `tabs/browse`                   | `GET /products`                                                   |
+| `products/[productId]`          | `GET /products/:id`                                               |
+| `products/[productId]/checkout` | `POST /orders`, `POST /payments/intent`, `POST /payments/confirm` |
+| `tabs/orders`                   | `GET /orders?status=&cursor=&limit=`                              |
+| `orders/[orderId]`              | `GET /orders/:id`, `GET /orders/:id/tracking`                     |
+| `tabs/profile` / edit profile   | `GET /users/me`, `PATCH /users/me`, `PATCH /users/me/password`    |
+| Manage payment method           | `GET /users/me/payment-method`, `POST /users/me/payment-method`   |
+| Notification lifecycle          | `POST /users/me/push-token`, `DELETE /users/me/push-token`        |
+| Logout                          | `DELETE /users/me/push-token`, `POST /auth/logout`                |
 
 ---
 
@@ -413,7 +413,7 @@ Success response:
 
 #### `POST /orders`
 
-Creates pending order and Stripe PaymentIntent.
+Creates pending order.
 
 Headers:
 
@@ -439,25 +439,19 @@ Success response:
 ```json
 {
   "data": {
-    "order": {
-      "id": "ord_123",
-      "status": "pending_payment",
-      "productId": "prd_123",
-      "deliveryAddress": {
-        "streetAddress": "Sunnlandsvegen 35",
-        "city": "Trondheim",
-        "zipCode": "7032"
-      },
-      "amount": {
-        "subtotal": 79.99,
-        "deliveryFee": 2.99,
-        "total": 82.98,
-        "currency": "USD"
-      }
+    "id": "ord_123",
+    "status": "pending_payment",
+    "productId": "prd_123",
+    "deliveryAddress": {
+      "streetAddress": "Sunnlandsvegen 35",
+      "city": "Trondheim",
+      "zipCode": "7032"
     },
-    "payment": {
-      "stripePaymentIntentId": "pi_abc123",
-      "paymentIntentClientSecret": "pi_abc123_secret_..."
+    "amount": {
+      "subtotal": 79.99,
+      "deliveryFee": 2.99,
+      "total": 82.98,
+      "currency": "USD"
     }
   },
   "error": null
@@ -467,8 +461,9 @@ Success response:
 Notes:
 
 - Frontend does not mark order confirmed
-- Backend updates status after Stripe webhook confirmation
-- On failed payment retry, same PaymentIntent is reused
+- Payment intent is created via `POST /payments/intent`
+- Confirmation happens via `POST /payments/confirm`
+- On failed payment retry, reuse the same pending order and PaymentIntent
 
 #### `GET /orders`
 
@@ -609,6 +604,65 @@ Notes:
 
 - If `status` is terminal (`delivered`/`cancelled`), app stops polling
 - If drone position is unavailable, return `drone: null` and keep status
+
+---
+
+### Payments
+
+#### `POST /payments/intent`
+
+Creates or retrieves a Stripe payment intent for the pending order.
+
+Request body:
+
+```json
+{
+  "orderId": "ord_123"
+}
+```
+
+Success response:
+
+```json
+{
+  "data": {
+    "paymentIntentId": "pi_abc123",
+    "clientSecret": "pi_abc123_secret_...",
+    "customerId": "cus_123",
+    "publishableKey": "pk_test_..."
+  },
+  "error": null
+}
+```
+
+Notes:
+
+- App should use the returned `publishableKey` to initialize Stripe
+
+#### `POST /payments/confirm`
+
+Confirms payment with Stripe and updates the order status.
+
+Request body:
+
+```json
+{
+  "orderId": "ord_123",
+  "paymentIntentId": "pi_abc123"
+}
+```
+
+Success response:
+
+```json
+{
+  "data": {
+    "orderId": "ord_123",
+    "status": "confirmed"
+  },
+  "error": null
+}
+```
 
 ---
 
@@ -798,9 +852,8 @@ These are not called by the app, but are required for the full flow.
 
 ### `POST /webhooks/stripe`
 
-- Receives `payment_intent.succeeded` to move `pending_payment -> confirmed`
-- Triggers drone dispatch command after payment confirmation
-- Handles SetupIntent events for saved card updates
+- Optional. Order confirmation is handled by `POST /payments/confirm`
+- Can still handle SetupIntent events for saved card updates
 
 ### IoT gateway ingestion endpoint or MQTT consumer
 

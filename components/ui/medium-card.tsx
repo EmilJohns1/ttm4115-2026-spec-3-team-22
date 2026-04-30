@@ -10,20 +10,19 @@ import {
 } from "react-native";
 
 import { Icon } from "@/components/ui/icon";
+import { useProductDetailsQuery } from "@/services/products-service";
 import { cn } from "@/utils/cn";
 
 type DeliveryItemProps = {
   title: string;
   status: string;
-  imageUrl?: string;
   subtitle?: string;
   footerLeft?: string;
   footerRight?: string;
   href?: Href;
   showChevron?: boolean;
-  statusDotClassName?: string;
-  statusTextClassName?: string;
   className?: string;
+  productId: string;
 };
 
 /**
@@ -32,20 +31,25 @@ type DeliveryItemProps = {
 const MediumCard = ({
   title,
   status,
-  imageUrl,
   subtitle,
   footerLeft,
   footerRight,
-  href = "/auth/login",
+  href,
+  productId,
   showChevron = true,
-  statusDotClassName,
-  statusTextClassName,
   className,
 }: DeliveryItemProps) => {
+  const shouldShowChevron = Boolean(href) && showChevron;
+  let imageUrl = "";
+
+  const productDetailsQuery = useProductDetailsQuery(productId);
+  const productDetails = productDetailsQuery.data;
+  if (productDetails) {
+    imageUrl = productDetails.imageUrl;
+  }
   const imageSource: ImageSourcePropType = imageUrl?.trim()
     ? { uri: imageUrl }
     : require("../../assets/images/react-logo.png");
-  const shouldShowChevron = Boolean(href) && showChevron;
 
   const cardContent = (
     <>
@@ -65,14 +69,22 @@ const MediumCard = ({
         <View className="mt-2 flex-row items-center">
           <View
             className={cn(
-              "h-2.5 w-2.5 rounded-full bg-green-500",
-              statusDotClassName,
+              "h-2.5 w-2.5 rounded-full",
+              status === "Delivered"
+                ? "bg-green-600"
+                : status === "Cancelled"
+                  ? "bg-destructive"
+                  : "bg-chart-1",
             )}
           />
           <Text
             className={cn(
-              "ml-2 text-md font-medium text-green-500",
-              statusTextClassName,
+              "ml-2 font-medium text-base",
+              status === "Delivered"
+                ? "text-green-600"
+                : status === "Cancelled"
+                  ? "text-destructive"
+                  : "text-chart-1",
             )}
           >
             {status}

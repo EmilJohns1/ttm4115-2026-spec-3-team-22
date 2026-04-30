@@ -1,6 +1,8 @@
 import { Icon } from "@/components/ui/icon";
-import { Link } from "expo-router";
+import { useProductDetailsQuery } from "@/services/products-service";
+import { Link, useLocalSearchParams } from "expo-router";
 import {
+  AlertCircle,
   CheckCircle2,
   Clock3,
   PackageCheck,
@@ -10,7 +12,7 @@ import {
 } from "lucide-react-native";
 import React from "react";
 import {
-  FlatList,
+  ActivityIndicator,
   Image,
   Pressable,
   ScrollView,
@@ -18,14 +20,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-const PRODUCT_MOCK = {
-  name: "AeroPods Pro",
-  price: "$79.99",
-  description:
-    "Premium wireless earbuds with active noise cancellation, crystal-clear call quality, and up to 30 hours of battery with the charging case. Designed for all-day comfort and built for fast, reliable daily use.",
-  image: require("../../../assets/images/react-logo.png"),
-};
 
 const KEY_FEATURES = [
   {
@@ -49,9 +43,52 @@ const KEY_FEATURES = [
 ];
 
 /**
+ * Formats backend price and currency for display.
+ */
+function formatPrice(amount: number, currency?: string) {
+  return `${amount.toFixed(2)} ${currency ?? "NOK"}`;
+}
+
+/**
  * Product details screen with persistent checkout footer.
  */
 const ProductDetailsPage = () => {
+  const params = useLocalSearchParams<{ productId?: string | string[] }>();
+  const productId =
+    typeof params.productId === "string" ? params.productId : "";
+  const productQuery = useProductDetailsQuery(productId);
+
+  if (productQuery.isLoading) {
+    return (
+      <View className="flex-1 items-center justify-center gap-3 bg-background px-8">
+        <ActivityIndicator size="large" />
+        <Text className="text-muted-foreground">
+          Loading product details...
+        </Text>
+      </View>
+    );
+  }
+
+  if (productQuery.isError || !productQuery.data) {
+    const errorMessage =
+      productQuery.error instanceof Error
+        ? productQuery.error.message
+        : "Could not load product details. Please try again.";
+
+    return (
+      <View className="flex-1 items-center justify-center gap-3 bg-background px-8">
+        <Icon as={AlertCircle} size={28} className="text-destructive" />
+        <Text className="text-center text-destructive">{errorMessage}</Text>
+      </View>
+    );
+  }
+
+  const product = productQuery.data;
+  const priceLabel = formatPrice(product.price, product.currency);
+  const imageSource = product.imageUrl?.trim()
+    ? { uri: product.imageUrl }
+    : require("../../../assets/images/react-logo.png");
+
   return (
     <View className="flex-1 bg-background pt-4">
       <ScrollView
@@ -62,26 +99,26 @@ const ProductDetailsPage = () => {
         <View className="mt-2 overflow-hidden rounded-3xl border border-border bg-card">
           <View className="h-72 items-center justify-center bg-muted/50">
             <Image
-              className="h-48 w-48"
-              resizeMode="contain"
-              source={PRODUCT_MOCK.image}
+              className="h-full w-full"
+              resizeMode="cover"
+              source={imageSource}
             />
           </View>
         </View>
 
         <View className="mt-6">
           <Text className="text-3xl font-bold text-foreground">
-            {PRODUCT_MOCK.name}
+            {product.name}
           </Text>
           <Text className="mt-2 text-2xl font-semibold text-primary">
-            {PRODUCT_MOCK.price}
+            {priceLabel}
           </Text>
-          <Text className="mt-4 text-base leading-6 text-muted-foreground">
-            {PRODUCT_MOCK.description}
+          <Text className="mt-1.5 text-base leading-6 text-muted-foreground">
+            {product.description}
           </Text>
         </View>
 
-        <View className="mt-8 mb-4">
+        {/* <View className="mt-8 mb-4">
           <Text className="mb-3 text-xl font-semibold text-foreground">
             Key Features
           </Text>
@@ -101,10 +138,10 @@ const ProductDetailsPage = () => {
               </View>
             )}
           />
-        </View>
+        </View> */}
 
-        <View className="mt-2">
-          <View className="mb-3 flex-row items-center rounded-3xl border border-blue-300 bg-blue-50 px-4 py-5">
+        <View className="mt-3 gap-2.5">
+          <View className="flex-row items-center rounded-3xl border border-blue-300 bg-blue-50 px-4 py-5">
             <View className="mr-4 rounded-full bg-primary p-3.5">
               <Icon as={Clock3} className="text-primary-foreground" size={20} />
             </View>
@@ -145,14 +182,21 @@ const ProductDetailsPage = () => {
         <View className="mb-3 flex-row items-center justify-between">
           <View className="flex-row items-center">
             <Icon as={CheckCircle2} className="text-chart-2" size={16} />
-            <Text className="ml-1 text-sm text-muted-foreground">In stock</Text>
+            <Text className="ml-1 text-sm text-muted-foreground">
+              {product.available === false
+                ? "Currently unavailable"
+                : "In stock"}
+            </Text>
           </View>
         </View>
 
-        <Link href={`/products/${PRODUCT_MOCK.name}/checkout`} asChild>
-          <Pressable className="mb-1 items-center rounded-2xl bg-primary py-4">
+        <Link href={`/products/${product.id}/checkout`} asChild>
+          <Pressable
+            disabled={product.available === false}
+            className="mb-1 items-center rounded-2xl bg-primary py-4 disabled:opacity-50"
+          >
             <Text className="text-lg font-semibold text-primary-foreground">
-              {`Order now ${PRODUCT_MOCK.price}`}
+              {`Order now ${priceLabel}`}
             </Text>
           </Pressable>
         </Link>
