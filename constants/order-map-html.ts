@@ -176,8 +176,6 @@ export function createOrderMapHtml(
       const map = L.map("map", {
         zoomControl: false,
         attributionControl: false,
-        center: [${centerLatitude}, ${centerLongitude}],
-        zoom: 14,
       });
 
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -241,6 +239,18 @@ export function createOrderMapHtml(
       map.on("click", () => {
         areLabelsVisible = !areLabelsVisible;
         setLabelsVisible(areLabelsVisible);
+      });
+
+      const bounds = L.latLngBounds([
+        packageLocation,
+        deliveryLocation,
+      ]);
+
+      map.fitBounds(bounds, {
+        padding: [50, 50],
+        animate: true,
+        duration: 1,
+        maxZoom: 16,
       });
     </script>
   </body>

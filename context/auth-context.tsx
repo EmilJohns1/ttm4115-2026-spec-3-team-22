@@ -3,7 +3,11 @@ import type {
   AuthSessionUser,
   AuthTokens,
 } from "@/services/auth-service";
-import { setAuthTokens, setTokensRefreshedHandler, setUnauthenticatedHandler } from "@/utils/api-client";
+import {
+  setAuthTokens,
+  setTokensRefreshedHandler,
+  setUnauthenticatedHandler,
+} from "@/utils/api-client";
 import { logger } from "@/utils/logger";
 import * as SecureStore from "expo-secure-store";
 import {

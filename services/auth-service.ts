@@ -50,7 +50,6 @@ export async function loginUser(
   payload: LoginFormValues,
 ): Promise<AuthSession> {
   const tokens = await getTokens(payload.email, payload.password);
-  console.log("Tokens", tokens);
   const { data, error } = await api.GET("/users/me", {
     headers: { Authorization: `Bearer ${tokens.accessToken}` },
   });

@@ -1,16 +1,22 @@
-import createClient, { type Middleware } from "openapi-fetch";
 import { API_URL } from "@/constants/env";
 import type { paths } from "@/openapi";
+import createClient, { type Middleware } from "openapi-fetch";
 
 let _accessToken: string | null = null;
 let _refreshToken: string | null = null;
 let _onUnauthenticated: (() => void) | null = null;
 let _onTokensRefreshed:
-  | ((tokens: { accessToken: string; refreshToken: string; tokenType: string }) => void)
+  | ((tokens: {
+      accessToken: string;
+      refreshToken: string;
+      tokenType: string;
+    }) => void)
   | null = null;
 let _refreshPromise: Promise<boolean> | null = null;
 
-export function setAuthTokens(tokens: { accessToken: string; refreshToken: string } | null) {
+export function setAuthTokens(
+  tokens: { accessToken: string; refreshToken: string } | null,
+) {
   _accessToken = tokens?.accessToken ?? null;
   _refreshToken = tokens?.refreshToken ?? null;
 }
@@ -20,13 +26,19 @@ export function setUnauthenticatedHandler(handler: () => void) {
 }
 
 export function setTokensRefreshedHandler(
-  handler: (tokens: { accessToken: string; refreshToken: string; tokenType: string }) => void,
+  handler: (tokens: {
+    accessToken: string;
+    refreshToken: string;
+    tokenType: string;
+  }) => void,
 ) {
   _onTokensRefreshed = handler;
 }
 
 async function attemptTokenRefresh(): Promise<boolean> {
-  if (!_refreshToken) return false;
+  if (!_refreshToken) {
+    return false;
+  }
   try {
     const response = await fetch(`${API_URL}/auth/refresh`, {
       method: "POST",
@@ -39,16 +51,17 @@ async function attemptTokenRefresh(): Promise<boolean> {
       refresh_token?: string;
       token_type?: string;
     };
-    if (!data.access_token || !data.refresh_token || !data.token_type) return false;
+    if (!data.access_token || !data.token_type) return false;
     _accessToken = data.access_token;
-    _refreshToken = data.refresh_token;
+    // Backend may not rotate the refresh token — keep the existing one if so.
+    if (data.refresh_token) _refreshToken = data.refresh_token;
     _onTokensRefreshed?.({
       accessToken: data.access_token,
-      refreshToken: data.refresh_token,
+      refreshToken: _refreshToken!,
       tokenType: data.token_type,
     });
     return true;
-  } catch {
+  } catch (err) {
     return false;
   }
 }
