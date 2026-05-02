@@ -9,7 +9,7 @@ import { logger } from "@/utils/logger";
 import { useStripe } from "@stripe/stripe-react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { CreditCard, MapPin } from "lucide-react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, type FieldPath, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
@@ -38,6 +38,7 @@ type ActiveCheckoutSession = {
   paymentIntentClientSecret?: string;
   paymentIntentId?: string;
   customerId?: string | null;
+  ephemeralKeySecret?: string | null;
   publishableKey?: string | null;
   paymentCompleted?: boolean;
 };
@@ -118,20 +119,16 @@ const CheckoutPage = () => {
   const createOrderMutation = useCreateOrderMutation();
   const createPaymentIntentMutation = useCreatePaymentIntentMutation();
 
-  // useEffect(() => {
-  //   const deliveryAddress =
-  //     userDetailsQuery.data?.deliveryAddress ?? user?.deliveryAddress;
+  useEffect(() => {
+    const userData = userDetailsQuery.data;
+    if (!userData?.street_address) return;
 
-  //   if (!deliveryAddress) {
-  //     return;
-  //   }
-
-  //   reset({
-  //     streetAddress: deliveryAddress.streetAddress,
-  //     city: deliveryAddress.city,
-  //     zipCode: deliveryAddress.zipCode,
-  //   });
-  // }, [reset, user?.deliveryAddress, userDetailsQuery.data?.deliveryAddress]);
+    reset({
+      streetAddress: userData.street_address,
+      city: userData.city ?? "",
+      zipCode: userData.zip_code ?? "",
+    });
+  }, [reset, userDetailsQuery.data]);
 
   const product = productQuery.data;
   const subtotal = product?.price ?? 0;
@@ -167,6 +164,7 @@ const CheckoutPage = () => {
         paymentIntentClientSecret: paymentIntent.clientSecret,
         paymentIntentId: paymentIntent.paymentIntentId,
         customerId: paymentIntent.customerId,
+        ephemeralKeySecret: paymentIntent.ephemeralKeySecret ?? null,
         publishableKey: paymentIntent.publishableKey ?? null,
       };
 
@@ -187,6 +185,7 @@ const CheckoutPage = () => {
       merchantDisplayName: "DroneDelivery",
       paymentIntentClientSecret,
       customerId: session.customerId ?? undefined,
+      customerEphemeralKeySecret: session.ephemeralKeySecret ?? undefined,
       allowsDelayedPaymentMethods: false,
     });
 

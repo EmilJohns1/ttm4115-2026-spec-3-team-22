@@ -1,7 +1,8 @@
 import { Icon } from "@/components/ui/icon";
 import SmallCard from "@/components/ui/small-card";
 import { useAuth } from "@/context/auth-context";
-import { Link } from "expo-router";
+import { useUserDetailsQuery } from "@/services/user-service";
+import { Link, type Href } from "expo-router";
 import {
   Bell,
   CreditCard,
@@ -19,6 +20,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
  */
 const ProfileTab = () => {
   const { user, signOut } = useAuth();
+  const userDetailsQuery = useUserDetailsQuery();
 
   const initials = useMemo(() => {
     const name = user?.name?.trim();
@@ -28,6 +30,14 @@ const ProfileTab = () => {
 
     return name[0]?.toUpperCase() ?? "U";
   }, [user?.name]);
+
+  const addressSubtitle = useMemo(() => {
+    const d = userDetailsQuery.data;
+    if (d?.street_address && d?.city) {
+      return `${d.street_address}, ${d.city}`;
+    }
+    return "No address saved";
+  }, [userDetailsQuery.data]);
 
   return (
     <SafeAreaView edges={[]} className="flex-1">
@@ -63,20 +73,23 @@ const ProfileTab = () => {
               icon={User}
               iconAccent="blue"
               pressable
+              href={"/editPersonalInfo" as Href}
             />
             <SmallCard
               title="Delivery Address"
-              subtitle="Sunnlandsvegen 35, Trondheim"
+              subtitle={addressSubtitle}
               icon={MapPin}
               iconAccent="green"
               pressable
+              href={"/editDeliveryAddress" as Href}
             />
             <SmallCard
               title="Payment methods"
-              subtitle="•••• 4242"
+              subtitle="Manage saved cards"
               icon={CreditCard}
               iconAccent="purple"
               pressable
+              href={"/paymentMethods" as any}
             />
           </View>
           <Text className="font-semibold text-xl">Preferences</Text>

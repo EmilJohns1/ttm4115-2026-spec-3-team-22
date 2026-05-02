@@ -15,17 +15,14 @@ import {
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { z } from "zod";
 
-const editProfileSchema = z.object({
+const editPersonalInfoSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters"),
   email: z.email("Please enter a valid email"),
-  street_address: z.string().trim(),
-  city: z.string().trim(),
-  zip_code: z.string().trim(),
 });
 
-type EditProfileFormValues = z.infer<typeof editProfileSchema>;
+type EditPersonalInfoFormValues = z.infer<typeof editPersonalInfoSchema>;
 
-const EditProfilePage = () => {
+const EditPersonalInfoPage = () => {
   const router = useRouter();
   const userQuery = useUserDetailsQuery();
   const updateUserMutation = useUpdateUserMutation();
@@ -36,14 +33,8 @@ const EditProfilePage = () => {
     reset,
     setError,
     formState: { errors },
-  } = useForm<EditProfileFormValues>({
-    defaultValues: {
-      name: "",
-      email: "",
-      street_address: "",
-      city: "",
-      zip_code: "",
-    },
+  } = useForm<EditPersonalInfoFormValues>({
+    defaultValues: { name: "", email: "" },
   });
 
   useEffect(() => {
@@ -51,25 +42,15 @@ const EditProfilePage = () => {
     reset({
       name: userQuery.data.name ?? "",
       email: userQuery.data.email ?? "",
-      street_address: userQuery.data.street_address ?? "",
-      city: userQuery.data.city ?? "",
-      zip_code: userQuery.data.zip_code ?? "",
     });
   }, [reset, userQuery.data]);
 
-  const onSubmit = async (values: EditProfileFormValues) => {
-    const parsed = editProfileSchema.safeParse(values);
-
+  const onSubmit = async (values: EditPersonalInfoFormValues) => {
+    const parsed = editPersonalInfoSchema.safeParse(values);
     if (!parsed.success) {
       parsed.error.issues.forEach((issue) => {
         const field = issue.path[0];
-        if (
-          field === "name" ||
-          field === "email" ||
-          field === "street_address" ||
-          field === "city" ||
-          field === "zip_code"
-        ) {
+        if (field === "name" || field === "email") {
           setError(field, { type: "zod", message: issue.message });
         }
       });
@@ -80,9 +61,6 @@ const EditProfilePage = () => {
       await updateUserMutation.mutateAsync({
         name: parsed.data.name,
         email: parsed.data.email,
-        street_address: parsed.data.street_address || null,
-        city: parsed.data.city || null,
-        zip_code: parsed.data.zip_code || null,
       });
       router.back();
     } catch {
@@ -119,19 +97,19 @@ const EditProfilePage = () => {
         ) : null}
 
         <View className="my-1 mt-5">
-          <Text className="mb-3 uppercase tracking-wide font-medium">
+          <Text className="mb-3 uppercase tracking-wide font-medium text-muted-foreground text-sm">
             Personal information
           </Text>
-          <View className="border border-border rounded-2xl bg-background">
+          <View className="border border-border rounded-2xl bg-card">
             <View className="border-b border-input px-5 py-3">
-              <Text>Name</Text>
+              <Text className="text-sm text-muted-foreground">Name</Text>
               <Controller
                 control={control}
                 name="name"
                 render={({ field: { onBlur, onChange, value } }) => (
                   <TextInput
                     placeholder="Full name"
-                    className="px-0 mx-0 font-medium"
+                    className="px-0 mx-0 font-medium text-foreground mt-0.5"
                     onBlur={onBlur}
                     onChangeText={onChange}
                     value={value}
@@ -147,14 +125,14 @@ const EditProfilePage = () => {
               ) : null}
             </View>
             <View className="px-5 py-3">
-              <Text>Email</Text>
+              <Text className="text-sm text-muted-foreground">Email</Text>
               <Controller
                 control={control}
                 name="email"
                 render={({ field: { onBlur, onChange, value } }) => (
                   <TextInput
                     placeholder="email@example.com"
-                    className="px-0 mx-0 font-medium"
+                    className="px-0 mx-0 font-medium text-foreground mt-0.5"
                     onBlur={onBlur}
                     onChangeText={onChange}
                     value={value}
@@ -172,93 +150,17 @@ const EditProfilePage = () => {
             </View>
           </View>
         </View>
-
-        <View className="py-3">
-          <Text className="mb-3 uppercase tracking-wide font-medium">
-            Delivery address
-          </Text>
-          <View className="border border-border rounded-2xl bg-background">
-            <View className="border-b border-input px-5 py-3">
-              <Text>Street address</Text>
-              <Controller
-                control={control}
-                name="street_address"
-                render={({ field: { onBlur, onChange, value } }) => (
-                  <TextInput
-                    placeholder="Sunnlandsvegen 35"
-                    className="px-0 mx-0 font-medium"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    autoCapitalize="words"
-                  />
-                )}
-              />
-              {errors.street_address ? (
-                <Text className="text-xs text-destructive mt-1">
-                  {errors.street_address.message}
-                </Text>
-              ) : null}
-            </View>
-            <View className="flex-row">
-              <View className="px-5 border-b border-input py-3 flex-1">
-                <Text>City</Text>
-                <Controller
-                  control={control}
-                  name="city"
-                  render={({ field: { onBlur, onChange, value } }) => (
-                    <TextInput
-                      placeholder="Trondheim"
-                      className="px-0 mx-0 font-medium"
-                      onBlur={onBlur}
-                      onChangeText={onChange}
-                      value={value}
-                      autoCapitalize="words"
-                    />
-                  )}
-                />
-                {errors.city ? (
-                  <Text className="text-xs text-destructive mt-1">
-                    {errors.city.message}
-                  </Text>
-                ) : null}
-              </View>
-              <View className="px-5 border-b border-input py-3 pr-10">
-                <Text>Postal code</Text>
-                <Controller
-                  control={control}
-                  name="zip_code"
-                  render={({ field: { onBlur, onChange, value } }) => (
-                    <TextInput
-                      placeholder="7032"
-                      className="px-0 mx-0 font-medium"
-                      onBlur={onBlur}
-                      onChangeText={onChange}
-                      value={value}
-                      keyboardType="number-pad"
-                    />
-                  )}
-                />
-                {errors.zip_code ? (
-                  <Text className="text-xs text-destructive mt-1">
-                    {errors.zip_code.message}
-                  </Text>
-                ) : null}
-              </View>
-            </View>
-          </View>
-        </View>
       </KeyboardAwareScrollView>
 
       <View className="gap-3 px-5 pb-4">
         <Pressable
           disabled={updateUserMutation.isPending}
-          className="bg-blue-500 py-5 rounded-2xl"
+          className="bg-primary py-5 rounded-2xl"
           onPress={handleSubmit((values) => {
             void onSubmit(values);
           })}
         >
-          <Text className="text-center text-white font-semibold">
+          <Text className="text-center text-primary-foreground font-semibold">
             {updateUserMutation.isPending ? "Saving..." : "Save changes"}
           </Text>
         </Pressable>
@@ -273,4 +175,4 @@ const EditProfilePage = () => {
   );
 };
 
-export default EditProfilePage;
+export default EditPersonalInfoPage;

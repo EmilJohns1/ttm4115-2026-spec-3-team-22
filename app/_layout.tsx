@@ -110,6 +110,22 @@ function RootNavigator() {
           presentation: "card",
         }}
       />
+      <Stack.Screen
+        name="editPersonalInfo/index"
+        options={{
+          headerShown: true,
+          title: "Personal Information",
+          presentation: "card",
+        }}
+      />
+      <Stack.Screen
+        name="editDeliveryAddress/index"
+        options={{
+          headerShown: true,
+          title: "Delivery Address",
+          presentation: "card",
+        }}
+      />
     </Stack>
   );
 }

@@ -19,10 +19,10 @@ const HomeTab = () => {
   const { user } = useAuth();
   if (!user) return;
   const activeOrdersQuery = useOrdersQuery("active");
-  const activeOrders = activeOrdersQuery.data?.slice(0, 2) ?? [];
+  const activeOrders = activeOrdersQuery.data ?? [];
 
   const recentOrdersQuery = useOrdersQuery("completed");
-  const recentOrders = recentOrdersQuery.data?.slice(0, 4) ?? [];
+  const recentOrders = recentOrdersQuery.data?.slice(0, 3) ?? [];
 
   const errorMessage =
     activeOrdersQuery.error instanceof Error
@@ -63,24 +63,25 @@ const HomeTab = () => {
           ) : null}
 
           {activeOrders.length > 0 ? (
-            <FlatList
-              contentContainerClassName="gap-1.5"
-              scrollEnabled={false}
-              data={activeOrders}
-              renderItem={({ item }) => {
-                const statusMeta = getOrderStatusMeta(item.status);
-                return (
-                  <MediumCard
-                    key={item.id}
-                    productId={item.productId}
-                    title={item.productName}
-                    status={statusMeta.label}
-                    href={`/orders/${item.id}`}
-                    showChevron={false}
-                  />
-                );
-              }}
-            />
+            <View className="h-60">
+              <FlatList
+                contentContainerClassName="gap-1.5"
+                data={activeOrders}
+                renderItem={({ item }) => {
+                  const statusMeta = getOrderStatusMeta(item.status);
+                  return (
+                    <MediumCard
+                      key={item.id}
+                      productId={item.productId}
+                      title={item.productName}
+                      status={statusMeta.label}
+                      href={`/orders/${item.id}`}
+                      showChevron={false}
+                    />
+                  );
+                }}
+              />
+            </View>
           ) : !activeOrdersQuery.isLoading && !activeOrdersQuery.isError ? (
             <View className="rounded-2xl border border-dashed border-border bg-card px-6 py-10">
               <Text className="text-center text-base font-semibold text-card-foreground">

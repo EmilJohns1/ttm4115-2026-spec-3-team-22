@@ -231,6 +231,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/payments/setup-intent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Setup Intent */
+        post: operations["create_setup_intent_payments_setup_intent_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payments/methods": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Payment Methods */
+        get: operations["list_payment_methods_payments_methods_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/payments/intent": {
         parameters: {
             query?: never;
@@ -459,8 +493,17 @@ export interface components {
             clientSecret: string;
             /** Customerid */
             customerId: string;
+            /** Ephemeralkeysecret */
+            ephemeralKeySecret?: string | null;
             /** Publishablekey */
             publishableKey?: string | null;
+        };
+        /** PaymentMethodsData */
+        PaymentMethodsData: {
+            /** Methods */
+            methods: components["schemas"]["SavedCard"][];
+            /** Defaultpaymentmethodid */
+            defaultPaymentMethodId?: string | null;
         };
         /** Product */
         Product: {
@@ -496,6 +539,35 @@ export interface components {
         RefreshRequest: {
             /** Refresh Token */
             refresh_token: string;
+        };
+        /** SavedCard */
+        SavedCard: {
+            /** Id */
+            id: string;
+            /** Brand */
+            brand: string;
+            /** Last4 */
+            last4: string;
+            /** Expmonth */
+            expMonth: number;
+            /** Expyear */
+            expYear: number;
+            /**
+             * Isdefault
+             * @default false
+             */
+            isDefault: boolean;
+        };
+        /** SetupIntentData */
+        SetupIntentData: {
+            /** Setupintentid */
+            setupIntentId: string;
+            /** Clientsecret */
+            clientSecret: string;
+            /** Customerid */
+            customerId: string;
+            /** Publishablekey */
+            publishableKey?: string | null;
         };
         /** UserCreate */
         UserCreate: {
@@ -1320,6 +1392,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_setup_intent_payments_setup_intent_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetupIntentData"];
+                };
+            };
+        };
+    };
+    list_payment_methods_payments_methods_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentMethodsData"];
                 };
             };
         };

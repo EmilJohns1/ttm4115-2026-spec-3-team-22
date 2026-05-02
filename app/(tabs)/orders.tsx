@@ -49,7 +49,6 @@ const OrdersTab = () => {
   const ordersQuery = useOrdersQuery(selectedSection);
 
   const visibleOrders = ordersQuery.data ?? [];
-  console.log("Visible orders", visibleOrders);
   const errorMessage =
     ordersQuery.error instanceof Error
       ? ordersQuery.error.message

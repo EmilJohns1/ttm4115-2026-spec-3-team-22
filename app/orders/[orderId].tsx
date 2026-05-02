@@ -73,7 +73,6 @@ const OrderDetailsPage = () => {
   const statusMeta = getOrderStatusMeta(
     trackingQuery.data?.status ?? orderQuery.data?.status ?? "confirmed",
   );
-  console.log("Tracking data", trackingQuery.data);
 
   const droneLocation =
     trackingQuery.data?.drone ?? trackingQuery.data?.destination;
