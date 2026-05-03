@@ -4,9 +4,13 @@ import random
 import messages_pb2 as mess
 from stmpy import Machine, Driver
 from math import cos, asin, sqrt, pi
+import os
+from dotenv import load_dotenv
 
-broker = "localhost"
-port = 1883
+load_dotenv()
+
+broker = os.getenv("BROKER_IP")
+port = os.getenv("BROKER_PORT")
 DockID = f'dock-{random.randint(0,1000)}'
 fleet = []
 assignments = []
