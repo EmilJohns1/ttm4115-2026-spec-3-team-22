@@ -1,6 +1,6 @@
 # ttm4115-backend
 
-A sample **FastAPI** backend project for TTM4115.
+A **FastAPI** backend project for TTM4115.
 
 ## Features
 
