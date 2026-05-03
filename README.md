@@ -7,8 +7,9 @@ A sample **FastAPI** backend project for TTM4115.
 - RESTful API for an e-commerce & drone delivery platform (Users, Products, Orders, Drones).
 - SQLite Database integration via SQLAlchemy ORM (Flattened relational data).
 - Pydantic v2 schemas mapping nested JSON to flat database fields (`Address`, `Amount`).
-- Standardized API Response Envelopes (`{ "data": {}, "error": null }`).
-- Built-in User Authentication (Registration / Login) with PBKDF2 password hashing and salting.
+- Standardized API Responses
+- User Authentication using Fastapi-Users
+- Payment via Stripe
 - Automatic Database Seeding (injects sample products with randomized 200 x 200 images on startup).
 - Auto-generated interactive docs at `/docs` (Swagger UI) and `/redoc`.
 - Pytest test suite that runs against an in-memory SQLite database.
@@ -28,13 +29,16 @@ A sample **FastAPI** backend project for TTM4115.
 │   │   ├── users.py     # Auth & user profile operations
 │   │   ├── products.py  # Products catalog
 │   │   ├── orders.py    # Orders & drone tracking endpoints
-│   │   └── drones.py    # Drone telemetry
+│   │   ├── drones.py    # Drone telemetry
+│   │   └── payment.py   # Stripe payment
 │   └── schemas/
 │       ├── users.py     # User schemas (incl. auth)
 │       ├── products.py  # Product schemas
 │       ├── orders.py    # Order schemas & nested data wrappers
-│       └── drones.py    # Drone schemas
+│       ├── drones.py    # Drone schemas
+│       └── payment.py   # Stripe payment
 ├── api-spec-trimmed.md  # Detailed API specifications mapping
+├── auth                 # Authentication using Fastapi-users
 ├── tests/
 │   ├── conftest.py      # Test overrides and database fixtures
 │   ├── test_users.py
@@ -42,8 +46,13 @@ A sample **FastAPI** backend project for TTM4115.
 │   ├── test_orders.py
 │   └── test_drones.py
 ├── requirements.txt
+├── .env                 # Env file
+├── .env.local           # Example env file
+├── drone_delivery.db    # SQLite database file
+├── test.db              # SQLite test database file
 ├── Dockerfile           # Docker image setup
 ├── docker-compose.yml   # Docker Compose configuration
+├── LICENSE.md           # MIT License
 └── README.md
 ```
 
