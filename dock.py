@@ -9,11 +9,10 @@ broker = "localhost"
 port = 1883
 DockID = f'dock-{random.randint(0,1000)}'
 fleet = []
-assignments = []  # this is sorta dangerous cuz in theory there exists a possibility of popping and appending data at the same time by diff threads. Im choosing to be whimsical and ignore it for now
+assignments = []
 baseLatitude = 63.4335
 baseLongitude = 10.4
 
-# my super scientific method of calculating battery levels
 #    range of standard delivery drone:
 #       28 km (without payload)
 #       16 km (with payload 30 kg)
@@ -62,7 +61,6 @@ class MQTT_Dock:
                 for d in fleet:
                     if d["droneID"] == payloadHello.DroneID:
                         d["battery"] = payloadHello.Battery
-                    # d.update((k, payloadHello.Battery) for v, k in d.items() if v == payloadHello.DroneID)
             else:
                 fleet.append({"droneID": payloadHello.DroneID, "battery": payloadHello.Battery})
             print("fleet:"+str(fleet))
@@ -86,8 +84,6 @@ class MQTT_Dock:
 class Dock:
     def on_idle(self):
         pass
-        # fleet.append('drone-5') # available drones, for now hardcoded
-        # do we want some function that checks availability of drones?
 
     def make_assignment(self):
         # choose drone based on battery and pass the assignment to it

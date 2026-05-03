@@ -33,12 +33,6 @@ class MQTT_Drone:
             global currentOrderID
             currentOrderID = report.OrderID
             self.stm_driver.send("task_assignment", "drone", args=[report.Latitude, report.Longitude])
-        # elif message == "confirmation":
-        #     self.stm_driver.send("arrival_confirmation", "drone")
-        # self.count = self.count + 1
-        # if self.count == 20:
-        #     self.client.disconnect()
-        #     print("disconnected after 20 messages")
 
     def start(self, broker, port):
         print("Connecting to {}:{}".format(broker, port))
@@ -55,15 +49,11 @@ class MQTT_Drone:
             self.client.disconnect()
 
 class Drone:
-    #def __init__(self):
-        #droneHW = DroneHW()
-
     def on_idle(self):
         self.goalLatitude = 0
         self.goalLongitude = 0
         global currentOrderID
         currentOrderID = '0'
-        # self.batteryLevel = 100
         payload = mess.DroneHello()
         payload.DroneID = DroneID
         payload.Battery = self.droneHW.battery
@@ -80,8 +70,6 @@ class Drone:
         return 'flight'
 
     def send_status(self):
-        # TODO: pass status data from sensors
-
         status = mess.Status()
         status.Date = 1234567
         status.Battery_level = self.droneHW.battery
@@ -89,7 +77,6 @@ class Drone:
         status.Longitude = self.droneHW.position[1]
         status.Speed = 54 # 15 m/s
         print(status)
-        #print(str(status.Latitude) + " " + str(type(status.Latitude)) + " " + str(self.goalLatitude )+ " " + str(type(self.goalLatitude)))
         self.mqttclient.publish(f"delivery-system/drone/{DroneID}/status", status.SerializeToString()) # test message
         if status.Latitude == self.goalLatitude and status.Longitude == self.goalLongitude:
             print("success")
@@ -103,7 +90,6 @@ class Drone:
             self.stm_driver.send("landing", "drone")
 
     def send_status_on_return(self):
-        # TODO: pass status data from sensors
         status = mess.Status()
         status.Date = 1234567
         status.Battery_level = self.droneHW.battery

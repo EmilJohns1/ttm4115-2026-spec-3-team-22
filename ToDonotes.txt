@@ -1,9 +1,0 @@
-After request for assignment, dock asks drone for battery status
-// new messages: req for battery, and battery level
-// this goes into the logic of choosing the drone for assignment
-
-
-Choice of drone (on dock):
-1. calculate the distance of drone base vs assigned location
-2. Calculate minimal battery required for flight
-3. chose random drone that has the minimum required (plus buffer) or send a failure

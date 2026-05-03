@@ -1,12 +1,34 @@
 # Drone Delivery
 
-- _publisher.py_ - template for publishing
-- _subscriber.py_ - template for subscribing
-- _drone.py_ - work-in-progress prototype of drone state machine with incorporated MQTT communication
-- _messages.proto_ - definition of messages in protobuf; after modifying they need to be re-processed with protoc.exe
+For successful startup, order is important. Remember to modify broker IP address accordingly with used infrastructure. Below steps to run the IoT side of delivery system:
 
-### Link to protobuf releases
-URL: https://github.com/protocolbuffers/protobuf/releases
+### Step 0
+To run, the system needs a mosquitto broker running.
+<br>URL for releases: https://mosquitto.org/download/
+<br>Command to run: `mosquitto -v -c mosquitto.conf`
 
-After modifying _messages.proto_ need to run:
-> .\protoc-25.9-win64\bin\protoc.exe --python_out=. messages.proto
+### Step 1
+Run `python3 dock.py`
+
+### Step 2
+Add drones to fleet.
+<br>To start the drone, run `python3 drone.py` on "drone" device.
+
+## MQTT Topics
+
+Topic structure utilized in the project:
+
+```
+.
+└── delivery-system/
+    ├── drone
+    │   └── <droneID>
+    │       ├── status
+    │       ├── assignment
+    │       ├── confirmation
+    │       └── readiness
+    └── management/
+        ├── request
+        ├── assignment
+        └── failure
+```
