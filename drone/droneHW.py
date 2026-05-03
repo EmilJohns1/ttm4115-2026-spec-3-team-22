@@ -59,13 +59,13 @@ class DroneHW:
 			self.battery_full = False
 			self.battery_last = False
 			if self.battery > 0:
-				self.battery -= 0.01
+				self.battery -= 0.02
 			if self.battery <= 0:
 				self.battery = 0
 		
 		if self.state == "idle":
 			if self.battery < 100:
-				self.battery += 0.05
+				self.battery += 0.06
 			if self.battery >= 100:
 				self.battery = 100
 				self.battery_full = True
