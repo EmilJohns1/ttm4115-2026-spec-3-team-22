@@ -4,9 +4,13 @@ import random
 import messages_pb2 as mess
 from stmpy import Machine, Driver
 from drone.droneHW import DroneHW
+import os
+from dotenv import load_dotenv
 
-broker = "10.94.214.190"
-port = 1883
+load_dotenv()
+
+broker = os.getenv("BROKER_IP", "localhost")
+port = os.getenv("BROKER_PORT", 1883)
 batteryLevel = 100 # upon start drone fully charged
 DroneID = f'drone-{random.randint(0, 100)}'
 currentOrderID = '0'
