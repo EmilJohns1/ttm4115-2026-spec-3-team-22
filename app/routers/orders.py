@@ -149,7 +149,7 @@ def get_order_tracking(
         "pending": "Payment processed",
         "confirmed": "Order confirmed",
         "dispatched": "Drone dispatched",
-        "delivered": "Delivered",
+        "completed": "Delivered",
         "cancelled": "Cancelled"
     }
 
