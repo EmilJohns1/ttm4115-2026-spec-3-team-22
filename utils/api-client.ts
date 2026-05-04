@@ -14,6 +14,10 @@ let _onTokensRefreshed:
   | null = null;
 let _refreshPromise: Promise<boolean> | null = null;
 
+export function getAccessToken() {
+  return _accessToken;
+}
+
 export function setAuthTokens(
   tokens: { accessToken: string; refreshToken: string } | null,
 ) {

@@ -55,6 +55,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/device-token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register Device Token */
+        post: operations["register_device_token_auth_device_token_post"];
+        /** Delete Device Token */
+        delete: operations["delete_device_token_auth_device_token_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/register": {
         parameters: {
             query?: never;
@@ -366,6 +384,11 @@ export interface components {
              * Format: password
              */
             client_secret?: string | null;
+        };
+        /** DeviceTokenRequest */
+        DeviceTokenRequest: {
+            /** Token */
+            token: string;
         };
         /** DroneStatus */
         DroneStatus: {
@@ -787,6 +810,55 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
+            };
+        };
+    };
+    register_device_token_auth_device_token_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeviceTokenRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_device_token_auth_device_token_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

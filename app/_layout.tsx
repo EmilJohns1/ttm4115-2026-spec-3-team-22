@@ -2,8 +2,9 @@ import { AuthProvider, useAuth } from "@/context/auth-context";
 import { PaymentProvider, usePaymentConfig } from "@/context/payment-context";
 import { StripeProvider } from "@stripe/stripe-react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import * as Notifications from "expo-notifications";
 import { Stack, useRouter, useSegments } from "expo-router";
-import { type PropsWithChildren, useEffect } from "react";
+import { type PropsWithChildren, useEffect, useRef, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
 
@@ -52,6 +53,9 @@ function RootNavigator() {
   const { user, isHydrated } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  const [coldStartHandled, setColdStartHandled] = useState(false);
+  const notificationTapListener =
+    useRef<ReturnType<typeof Notifications.addNotificationResponseReceivedListener> | null>(null);
 
   useEffect(() => {
     if (!isHydrated) {
@@ -69,6 +73,29 @@ function RootNavigator() {
       router.replace("/(tabs)");
     }
   }, [isHydrated, router, segments, user]);
+
+  // Navigate to the order screen when user taps a notification while the app is running.
+  useEffect(() => {
+    notificationTapListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        const orderId = response.notification.request.content.data?.orderId as
+          | string
+          | undefined;
+        if (orderId) router.push(`/orders/${orderId}`);
+      });
+    return () => notificationTapListener.current?.remove();
+  }, [router]);
+
+  // Navigate to the order screen when user taps a notification that cold-started the app.
+  useEffect(() => {
+    if (!isHydrated || !user || coldStartHandled) return;
+    setColdStartHandled(true);
+    const response = Notifications.getLastNotificationResponse();
+    const orderId = response?.notification.request.content.data?.orderId as
+      | string
+      | undefined;
+    if (orderId) router.push(`/orders/${orderId}`);
+  }, [isHydrated, user, coldStartHandled, router]);
 
   if (!isHydrated) {
     return null;
