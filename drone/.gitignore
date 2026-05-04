@@ -2,3 +2,4 @@
 __pycache__/
 protoc-25.9-win64/
 archv/
+*.pyc
