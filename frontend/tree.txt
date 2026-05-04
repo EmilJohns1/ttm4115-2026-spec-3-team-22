@@ -1,0 +1,73 @@
+.
+├── README.md
+├── app
+│   ├── (auth)
+│   │   ├── _layout.tsx
+│   │   ├── login.tsx
+│   │   └── register.tsx
+│   ├── (checkout)
+│   │   ├── [orderId].tsx
+│   │   └── _layout.tsx
+│   ├── (products)
+│   │   ├── [productId].tsx
+│   │   └── _layout.tsx
+│   ├── (tabs)
+│   │   ├── _layout.tsx
+│   │   ├── explore.tsx
+│   │   ├── index.tsx
+│   │   ├── profile.tsx
+│   │   └── tracking.tsx
+│   ├── (tracking)
+│   │   ├── [orderId].tsx
+│   │   └── _layout.tsx
+│   └── _layout.tsx
+├── app.json
+├── assets
+│   └── images
+│       ├── android-icon-background.png
+│       ├── android-icon-foreground.png
+│       ├── android-icon-monochrome.png
+│       ├── favicon.png
+│       ├── icon.png
+│       ├── partial-react-logo.png
+│       ├── react-logo.png
+│       ├── react-logo@2x.png
+│       ├── react-logo@3x.png
+│       └── splash-icon.png
+├── components
+│   ├── haptic-tab.tsx
+│   └── ui
+│       ├── icon-symbol.ios.tsx
+│       └── icon-symbol.tsx
+├── constants
+│   └── theme.ts
+├── docs
+│   ├── api-spec.md
+│   ├── architecture.md
+│   ├── conventions.md
+│   ├── docs README.md
+│   └── features
+│       ├── auth.md
+│       ├── browse-products.md
+│       ├── dashboard.md
+│       ├── edit-profile.md
+│       ├── feature-template.md
+│       ├── notifications.md
+│       ├── order-product.md
+│       └── order-tracking.md
+├── eslint.config.js
+├── expo-env.d.ts
+├── hooks
+│   ├── use-color-scheme.ts
+│   ├── use-color-scheme.web.ts
+│   └── use-theme-color.ts
+├── package-lock.json
+├── package.json
+├── scripts
+│   └── reset-project.js
+├── tree.txt
+├── tsconfig.json
+└── utils
+    └── logger.ts
+
+17 directories, 54 files
