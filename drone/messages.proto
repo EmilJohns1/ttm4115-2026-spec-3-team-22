@@ -1,0 +1,43 @@
+syntax = "proto2";
+
+message Status{
+    required uint32 Date = 1;
+    required float Battery_level = 2;
+    required double Latitude = 3;
+    required double Longitude = 4;
+    required double Speed = 5;
+}
+
+message TaskAssignment{
+    required string OrderID = 1;
+    required double Latitude = 2;
+    required double Longitude = 3;
+}
+
+message AssignmentRequest{
+    required string OrderID = 1;
+    required double Latitude = 2;
+    required double Longitude = 3;
+}
+
+message DroneHello{
+    required string DroneID = 1;
+    required float Battery = 2;
+}
+
+message ArrivalConfirmation{
+    required string OrderID = 1;
+    optional string DroneID = 2;
+}
+
+message DroneAssignment{
+    required string OrderID = 1;
+    required string DroneID = 2;
+    required double Latitude = 3;
+    required double Longitude = 4;
+}
+
+message AssignmentFailed{
+    required string OrderID = 1;
+    required uint32 ErrCode = 2;
+}
