@@ -4,6 +4,11 @@ import type {
   AuthTokens,
 } from "@/services/auth-service";
 import {
+  deregisterPushToken,
+  registerForPushNotifications,
+  registerPushToken,
+} from "@/services/notification-service";
+import {
   setAuthTokens,
   setTokensRefreshedHandler,
   setUnauthenticatedHandler,
@@ -69,6 +74,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   userRef.current = user;
 
   const signOut = useCallback(async () => {
+    await deregisterPushToken().catch(() => {});
     setUser(null);
     setAuthTokens(null);
     await SecureStore.deleteItemAsync(SESSION_KEY);
@@ -117,6 +123,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setUser(session.user);
     setAuthTokens(session.tokens);
     await SecureStore.setItemAsync(SESSION_KEY, JSON.stringify(session));
+    registerForPushNotifications()
+      .then((token) => { if (token) return registerPushToken(token); })
+      .catch((err) => logger.error("Push notification registration failed", err));
   }, []);
 
   const value = useMemo<AuthContextValue>(
