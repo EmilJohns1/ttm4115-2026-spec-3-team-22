@@ -1,6 +1,7 @@
 import paho.mqtt.client as mqtt
 from app.db.base import SessionLocal
 from app.db import models
+from app.notifications import send_delivery_notification
 from datetime import UTC, datetime
 import logging
 import os
@@ -73,14 +74,19 @@ class MQTTService:
                 # Update order status to delivered
                 order = db.query(models.Order).filter(models.Order.id == order_id).first()
                 if order:
-                    order.status = "delivered"
+                    order.status = "completed"
                     order.drone_id = None  # Clear drone assignment on delivery
                     drone = db.query(models.DroneStatus).filter(models.DroneStatus.drone_id == drone_id).first()
                     if drone:
                         drone.current_order_id = None  # Clear current order from drone status
                     db.commit()
                     logger.info(f"Order {order_id} marked as delivered in DB.")
-                    
+
+                    user = db.query(models.User).filter(models.User.id == order.user_id).first()
+                    if user and user.push_token:
+                        logger.info("Sending notification to client")
+                        send_delivery_notification(user.push_token, order_id)
+
                     # When a drone is finished delivering, we check for waiting orders and assign them a drone
                     self.assign_next_pending_order(db)
                 else:
