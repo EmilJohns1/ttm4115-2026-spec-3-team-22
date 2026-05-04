@@ -51,21 +51,6 @@ services:
     depends_on:
       - broker
 
-  drone_device:
-    build:
-      context: ./drone
-    container_name: drone_device
-    env_file:
-      - ./drone/.env
-    environment:
-      - PYTHONUNBUFFERED=1
-      # Override the broker IP to point to the mosquitto container
-      - BROKER_IP=broker
-      - BROKER_PORT=1883
-    command: python drone.py
-    depends_on:
-      - broker
-
 volumes:
   mosquitto-data:
   mosquitto-log:

@@ -1,12 +1,25 @@
 # ttm4115-2026-spec-3-team-22
 
-## Backend & Drone
-To run the backend and the drone, you simply need to use Docker Compose from the root directory:
+## Backend & Drone Dock
+To run the backend and the drone dock, you simply need to use Docker Compose from the root directory:
 
 (make sure to create a .env file in both directories)
 
 ```bash
 docker compose up --build
+```
+
+## Drone
+The drone runs on a Raspberry Pi with a Sense HAT. The host of the broker's ip address must be specified in the .env file: 
+
+```bash
+BROKER_HOST_IP="xx.xx.xxx.xxx"
+```
+
+To run the drone, simply execute this command on the Raspberry Pi: 
+
+```bash
+python drone.py
 ```
 
 ## Frontend
