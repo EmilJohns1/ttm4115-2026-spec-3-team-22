@@ -3,14 +3,7 @@ import SmallCard from "@/components/ui/small-card";
 import { useAuth } from "@/context/auth-context";
 import { useUserDetailsQuery } from "@/services/user-service";
 import { Link, type Href } from "expo-router";
-import {
-  Bell,
-  CreditCard,
-  Lock,
-  LogOut,
-  MapPin,
-  User,
-} from "lucide-react-native";
+import { Bell, CreditCard, LogOut, MapPin, User } from "lucide-react-native";
 import { useMemo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -99,13 +92,6 @@ const ProfileTab = () => {
               subtitle="Push notifications enabled"
               icon={Bell}
               iconAccent="yellow"
-              pressable
-            />
-            <SmallCard
-              title="Change Password"
-              subtitle="Update your password"
-              icon={Lock}
-              iconAccent="red"
               pressable
             />
           </View>
