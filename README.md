@@ -12,6 +12,8 @@ The system consists of following components:
 | Drone          | Python + Sense HAT (Raspberry Pi)   | Executes delivery flights and reports position and status            |
 
 Payments are handled by Stripe, and push notifications by Expo's push notification service
+
+Another thing worth noting is that the backend repository should populate the database with a test user with credentials: username: alice@example.com, password: password123.
 ## Environement variables
 Make sure to look through all the projects and see which environment variables are needed. Since we provide this as a public repository, we should not include these. If you are an examiner and need these, please try reaching out to the repository contributors or set them up yourself. It requires setting up a Stripe project and local webhook forwarder for STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET, and a Firebase project for GOOGLE_APPLICATION_CREDENTIALS.
 
