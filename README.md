@@ -2,6 +2,7 @@
 
 ## Backend & Drone
 To run the backend and the drone, you simply need to use Docker Compose from the root directory:
+
 (make sure to create a .env file in both directories)
 
 ```bash
