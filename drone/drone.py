@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-broker = os.getenv("BROKER_IP", "localhost")
+broker = os.getenv("BROKER_HOST_IP", "localhost")
 port = os.getenv("BROKER_PORT", 1883)
 batteryLevel = 100 # upon start drone fully charged
 DroneID = f'drone-{random.randint(0, 100)}'

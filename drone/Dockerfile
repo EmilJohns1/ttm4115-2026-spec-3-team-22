@@ -9,4 +9,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Command will be overridden in docker-compose.yml
-CMD ["python", "drone.py"]
+CMD ["python", "dock.py"]
