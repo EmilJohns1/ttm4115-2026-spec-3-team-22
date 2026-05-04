@@ -1,0 +1,77 @@
+version: "3.8"
+
+services:
+  broker:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto_broker
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-log:/mosquitto/log
+    # By default, mosquitto >= 2.0 requires configuration to allow anonymous connections
+    # We can pass a basic config directly using a command, or user can mount mosquitto.conf
+    command: /usr/sbin/mosquitto -c /mosquitto-no-auth.conf
+    configs:
+      - source: mosquitto_conf
+        target: /mosquitto-no-auth.conf
+
+  backend:
+    build: 
+      context: ./backend
+    container_name: drone_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    environment:
+      - PYTHONUNBUFFERED=1
+      # Override the broker IP to point to the mosquitto container
+      - MQTT_BROKER_URL=broker
+      - MQTT_BROKER_PORT=1883
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    depends_on:
+      - broker
+
+  drone_dock:
+    build:
+      context: ./drone
+    container_name: drone_dock
+    env_file:
+      - ./drone/.env
+    environment:
+      - PYTHONUNBUFFERED=1
+      # Override the broker IP to point to the mosquitto container
+      - BROKER_IP=broker
+      - BROKER_PORT=1883
+    command: python dock.py
+    depends_on:
+      - broker
+
+  drone_device:
+    build:
+      context: ./drone
+    container_name: drone_device
+    env_file:
+      - ./drone/.env
+    environment:
+      - PYTHONUNBUFFERED=1
+      # Override the broker IP to point to the mosquitto container
+      - BROKER_IP=broker
+      - BROKER_PORT=1883
+    command: python drone.py
+    depends_on:
+      - broker
+
+volumes:
+  mosquitto-data:
+  mosquitto-log:
+
+configs:
+  mosquitto_conf:
+    content: |
+      listener 1883 0.0.0.0
+      allow_anonymous true

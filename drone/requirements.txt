@@ -1,0 +1,4 @@
+paho-mqtt
+stmpy
+protobuf
+python-dotenv
